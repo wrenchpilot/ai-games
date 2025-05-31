@@ -35,7 +35,6 @@ Implement a consistent retro cyberpunk aesthetic throughout:
 
 ### Game 1: Asteroids (asteroids)
 
-
 **Full-featured space shooter with:**
 
 - Ship sprite graphics and asteroid images (4 sizes)
@@ -56,7 +55,6 @@ Implement a consistent retro cyberpunk aesthetic throughout:
 - High score persistence in localStorage
 
 ### Game 2: Flappy Bird (flappy-bird)
-
 
 **Classic obstacle avoidance game with:**
 

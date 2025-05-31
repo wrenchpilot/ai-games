@@ -283,6 +283,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-## Enjoy playing these classic games with a modern twist! 🕹️
+### Enjoy playing these classic games with a modern twist! 🕹️
 
-### Built with ❤️ and powered by AI
+#### Built with ❤️ and powered by AI
