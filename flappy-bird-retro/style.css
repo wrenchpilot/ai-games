@@ -1,0 +1,160 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Press Start 2P', cursive;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #00ff88;
+    overflow: hidden;
+}
+
+.game-container {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.8);
+    border: 3px solid #00ff88;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 
+        0 0 20px #00ff88,
+        inset 0 0 20px rgba(0, 255, 136, 0.1);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 20px #00ff88, inset 0 0 20px rgba(0, 255, 136, 0.1); }
+    to { box-shadow: 0 0 30px #00ff88, 0 0 40px #00ff88, inset 0 0 20px rgba(0, 255, 136, 0.2); }
+}
+
+.game-header {
+    margin-bottom: 15px;
+}
+
+.title {
+    font-size: 16px;
+    color: #ff6b6b;
+    text-shadow: 
+        2px 2px 0px #000,
+        0 0 10px #ff6b6b;
+    margin-bottom: 10px;
+    animation: titlePulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes titlePulse {
+    from { text-shadow: 2px 2px 0px #000, 0 0 10px #ff6b6b; }
+    to { text-shadow: 2px 2px 0px #000, 0 0 20px #ff6b6b, 0 0 30px #ff6b6b; }
+}
+
+.score-container {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    margin-bottom: 10px;
+}
+
+.score, .high-score {
+    color: #ffd93d;
+    text-shadow: 1px 1px 0px #000;
+}
+
+#gameCanvas {
+    border: 2px solid #00ff88;
+    background: linear-gradient(to bottom, #87ceeb 0%, #87ceeb 75%, #90ee90 75%, #90ee90 100%);
+    border-radius: 5px;
+    box-shadow: 
+        inset 0 0 50px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(0, 255, 136, 0.3);
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.game-controls {
+    margin-top: 15px;
+}
+
+.instructions {
+    color: #00ff88;
+    font-size: 8px;
+    line-height: 1.5;
+    animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.5; }
+}
+
+.game-over {
+    color: #ff6b6b;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.game-over h2 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 0px #000;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.retro-btn {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+    color: white;
+    border: 2px solid #fff;
+    padding: 10px 20px;
+    margin-top: 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-shadow: 1px 1px 0px #000;
+    box-shadow: 
+        0 4px 0 #d63031,
+        0 0 10px rgba(255, 107, 107, 0.5);
+    transition: all 0.1s ease;
+    outline: none;
+}
+
+.retro-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 0 #d63031,
+        0 0 20px rgba(255, 107, 107, 0.8);
+}
+
+.retro-btn:active {
+    transform: translateY(2px);
+    box-shadow: 
+        0 2px 0 #d63031,
+        0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 10px;
+        margin: 10px;
+    }
+    
+    .title {
+        font-size: 12px;
+    }
+    
+    #gameCanvas {
+        width: 350px;
+        height: 525px;
+    }
+}

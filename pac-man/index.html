@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Pac-Man</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">PAC-MAN</h1>
+            <div class="score-board">
+                <div class="score">SCORE: <span id="score">0</span></div>
+                <div class="lives">LIVES: <span id="lives">3</span></div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div class="controls">
+            <div class="control-info">
+                <p>Use ARROW KEYS to move</p>
+                <p>Press SPACE to start/pause</p>
+            </div>
+        </div>
+        
+        <div id="gameOver" class="game-over hidden">
+            <h2>GAME OVER</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button id="restartBtn">PLAY AGAIN</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
