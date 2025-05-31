@@ -5,7 +5,9 @@ A collection of classic retro-style arcade games built with HTML5 Canvas and van
 ## 🎮 Games Collection
 
 ### 🚀 Asteroids
+
 Classic space shooter featuring:
+
 - **Ship Controls**: Thrust, rotate, and shoot lasers
 - **Physics Engine**: Realistic momentum and inertia
 - **Progressive Difficulty**: Asteroids break into smaller pieces
@@ -15,7 +17,9 @@ Classic space shooter featuring:
 - **Audio**: Web Audio API generated sound effects
 
 ### 🐦 Flappy Bird
+
 Retro-styled obstacle avoidance game with:
+
 - **Simple Controls**: Space or click to flap
 - **Pixel Art Style**: Retro visual design
 - **Particle Effects**: Visual flair and explosions
@@ -23,7 +27,9 @@ Retro-styled obstacle avoidance game with:
 - **Smooth Physics**: Gravity and jump mechanics
 
 ### 🍌 Gorillas
+
 Turn-based artillery combat featuring:
+
 - **vs AI Opponent**: Intelligent AI that learns and adapts
 - **Physics Simulation**: Realistic projectile trajectories
 - **Environmental Factors**: Wind affects banana flight path
@@ -34,12 +40,14 @@ Turn-based artillery combat featuring:
 ## 🎨 Design Features
 
 ### Retro Aesthetic
+
 - **Color Scheme**: Neon green (#00ff00) and orange (#ff6b00)
 - **Typography**: "Press Start 2P" pixel font
 - **Visual Effects**: Glowing text shadows, animated grids, shimmer effects
 - **Animations**: Smooth hover transitions, 3D card effects
 
 ### Responsive Design
+
 - Mobile-friendly layouts
 - Adaptive canvas sizing
 - Touch and keyboard controls
@@ -48,6 +56,7 @@ Turn-based artillery combat featuring:
 ## 🛠️ Technical Implementation
 
 ### Core Technologies
+
 - **HTML5 Canvas**: All game rendering
 - **Vanilla JavaScript**: No external frameworks
 - **CSS3**: Modern styling with animations
@@ -55,6 +64,7 @@ Turn-based artillery combat featuring:
 - **LocalStorage**: High score persistence
 
 ### Architecture
+
 - Object-oriented game design
 - 60 FPS game loops using `requestAnimationFrame`
 - Modular code organization
@@ -62,6 +72,7 @@ Turn-based artillery combat featuring:
 - State management systems
 
 ### Performance Features
+
 - Optimized rendering loops
 - Efficient collision detection
 - Asset preloading
@@ -71,43 +82,51 @@ Turn-based artillery combat featuring:
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - Local web server (for development)
 
 ### Installation
 
 1. **Clone or download the repository**
-```bash
-git clone [repository-url]
-cd ai-games
-```
+
+    ```bash
+    git clone [repository-url]
+    cd ai-games
+    ```
 
 2. **Start a local web server**
 
-Using Python:
-```bash
-# Python 3
-python -m http.server 8000
+    Using Python:
 
-# Python 2
-python -m SimpleHTTPServer 8000
-```
+    ```bash
+    # Python 3
+    python -m http.server 8000
+    ```
 
-Using Node.js:
-```bash
-npx http-server
-```
+    ```bash
+    # Python 2
+    python -m SimpleHTTPServer 8000
+    ```
 
-Using PHP:
-```bash
-php -S localhost:8000
-```
+    Using Node.js:
+
+    ```bash
+    npx http-server
+    ```
+
+    Using PHP:
+
+    ```bash
+    php -S localhost:8000
+    ```
 
 3. **Open your browser**
 Navigate to `http://localhost:8000`
 
 ### File Structure
-```
+
+```plaintext
 ai-games/
 ├── index.html                 # Main homepage
 ├── README.md                  # This file
@@ -132,17 +151,20 @@ ai-games/
 ## 🎮 Controls
 
 ### Asteroids
+
 - **Arrow Keys**: Rotate ship left/right
 - **Up Arrow**: Thrust forward
 - **Spacebar**: Fire lasers
 - **Escape**: Pause game
 
 ### Flappy Bird
+
 - **Spacebar**: Flap wings
 - **Mouse Click**: Flap wings
 - **Spacebar**: Start/restart game
 
 ### Gorillas
+
 - **Number Inputs**: Set angle (0-90°) and velocity (1-100)
 - **Fire Button**: Launch banana
 - **Spacebar**: Fire (alternative)
@@ -150,16 +172,19 @@ ai-games/
 ## 🎯 Game Features
 
 ### High Scores
+
 - Persistent high score tracking using localStorage
 - Individual high scores for each game
 - Automatic save/load functionality
 
 ### Audio System
+
 - Web Audio API for dynamic sound generation
 - Sound effects for actions (shooting, explosions, throwing)
 - Graceful fallback for browsers without audio support
 
 ### Visual Effects
+
 - Particle systems for explosions and trails
 - Smooth animations and transitions
 - Retro-style graphics and shaders
@@ -168,6 +193,7 @@ ai-games/
 ## 🔧 Development
 
 ### Adding New Games
+
 1. Create a new folder in the root directory
 2. Include `index.html`, game script, and `style.css`
 3. Follow the established retro aesthetic
@@ -175,12 +201,14 @@ ai-games/
 5. Update main `index.html` with new game card
 
 ### Customization
+
 - **Colors**: Modify CSS custom properties in each game's stylesheet
 - **Fonts**: Update Google Fonts imports
 - **Sounds**: Adjust Web Audio API parameters in game scripts
 - **Difficulty**: Tweak game variables for balance
 
 ### Browser Support
+
 - **Chrome**: Full support
 - **Firefox**: Full support
 - **Safari**: Full support
@@ -190,6 +218,7 @@ ai-games/
 ## 📱 Mobile Support
 
 All games include:
+
 - Touch controls where applicable
 - Responsive layouts
 - Optimized performance for mobile devices
@@ -198,12 +227,14 @@ All games include:
 ## 🎨 Styling Guide
 
 ### Color Palette
+
 - Primary: `#00ff00` (Neon Green)
 - Secondary: `#ff6b00` (Retro Orange)
 - Background: `#0a0a0a`, `#1a1a2e`, `#16213e` (Dark Gradients)
 - Accent: `#ffff00` (Bright Yellow)
 
 ### Typography
+
 - Main Font: "Press Start 2P" (Google Fonts)
 - Fallback: "Courier New", monospace
 - Effects: Glowing text shadows, letter spacing
@@ -236,6 +267,7 @@ This project is open source and available under the [MIT License](LICENSE).
 ## 🌟 Features Showcase
 
 ### Technical Highlights
+
 - **60 FPS Gameplay**: Smooth animations using requestAnimationFrame
 - **Collision Detection**: Efficient algorithms for game physics
 - **State Management**: Proper game state handling and transitions
@@ -243,6 +275,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - **Cross-Platform**: Works on desktop and mobile browsers
 
 ### Visual Highlights
+
 - **Retro Aesthetics**: Authentic 80s/90s arcade look
 - **Smooth Animations**: CSS3 and Canvas-based effects
 - **Interactive UI**: Hover effects and transitions
@@ -250,6 +283,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-**Enjoy playing these classic games with a modern twist! 🕹️**
+## Enjoy playing these classic games with a modern twist! 🕹️
 
-*Built with ❤️ and powered by AI*
+### Built with ❤️ and powered by AI
