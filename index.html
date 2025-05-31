@@ -197,18 +197,19 @@
         }
 
         .retro-lines {
-            position: absolute;
-            top: 50%;
+            position: fixed;
+            top: 0;
             left: 0;
             right: 0;
             height: 2px;
             background: linear-gradient(90deg, transparent, #00ff00, transparent);
             animation: scanLine 3s linear infinite;
+            z-index: 0;
         }
 
         @keyframes scanLine {
             0% {
-                transform: translateY(-100vh);
+                transform: translateY(-2px);
             }
 
             100% {
