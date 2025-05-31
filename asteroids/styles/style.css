@@ -1,0 +1,108 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #000;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    /* Hide scrollbars */
+}
+
+canvas {
+    border: 2px solid #fff;
+    background-color: #000;
+}
+
+.score-container,
+.lives-container,
+.level-container,
+.high-score-container,
+.timer-container {
+    display: none; /* Hide the HTML HUD elements as they'll now be drawn on canvas */
+}
+
+/* Legacy positioning styles kept but not used */
+.score-container {
+    top: 20px;
+    left: 20px;
+}
+
+.lives-container {
+    top: 20px;
+    right: 20px;
+}
+
+.level-container {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.high-score-container {
+    position: absolute;
+    font-size: 20px;
+    color: #ffd700; /* Gold color to make it stand out */
+    top: 45px; /* Below the level display */
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+}
+
+.timer-container {
+    position: absolute;
+    font-size: 20px;
+    color: #ffffff; /* Green color for timer */
+    top: 80px;
+    font-weight: bold;
+}
+
+/* Basic button styling for potential future use (e.g., start/reset button) */
+button {
+    background-color: #222;
+    color: #fff;
+    border: 2px solid #fff;
+    padding: 10px 20px;
+    font-family: 'Courier New', Courier, monospace;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background-color: #444;
+}
+
+/* Back to home button styling */
+.back-home {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.back-home a {
+    display: inline-block;
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #00ff00, #00cc00);
+    color: #000;
+    text-decoration: none;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.back-home a:hover {
+    background: linear-gradient(45deg, #ff6b00, #ff4500);
+    border-color: #ff6b00;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
+}

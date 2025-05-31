@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Generated Games Arcade</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(45deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: gridPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes gridPulse {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            margin-bottom: 20px;
+            text-shadow:
+                0 0 10px #00ff00,
+                0 0 20px #00ff00,
+                0 0 30px #00ff00,
+                0 0 40px #00ff00;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from {
+                text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            }
+
+            to {
+                text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00;
+            }
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #ff6b00;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(255, 107, 0, 0.1));
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: #ff6b00;
+            box-shadow:
+                0 10px 30px rgba(0, 255, 0, 0.3),
+                0 0 50px rgba(255, 107, 0, 0.2);
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+            animation: shimmer 1s ease-in-out;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .game-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .game-description {
+            font-size: 0.7rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .play-button {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            border: none;
+            color: #000;
+            padding: 12px 30px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .play-button:hover {
+            background: linear-gradient(45deg, #ff6b00, #ff4500);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            border-top: 2px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .retro-lines {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: scanLine 3s linear infinite;
+        }
+
+        @keyframes scanLine {
+            0% {
+                transform: translateY(-100vh);
+            }
+
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+                letter-spacing: 4px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .game-title {
+                font-size: 1rem;
+            }
+
+            .game-description {
+                font-size: 0.6rem;
+            }
+
+            .play-button {
+                font-size: 0.7rem;
+                padding: 10px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-grid"></div>
+    <div class="retro-lines"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">AI Generated Games</h1>
+            <p class="subtitle">Retro Arcade Collection</p>
+        </header>
+
+        <main class="games-grid">
+            <div class="game-card" onclick="window.location.href='./asteroids/'">
+                <h2 class="game-title">Asteroids</h2>
+                <p class="game-description">Classic space shooter! Control your ship and destroy asteroids while
+                    avoiding collisions. Features power-ups, UFOs, and dynamic difficulty.</p>
+                <button class="play-button" onclick="window.location.href='./asteroids/'">Play Now</button>
+            </div>
+
+            <div class="game-card" onclick="window.location.href='./flappy-bird/'">
+                <h2 class="game-title">Flappy Bird</h2>
+                <p class="game-description">Navigate the bird through pipes in this retro-styled version of the
+                    addictive classic. Perfect pixel art graphics and smooth gameplay.</p>
+                <button class="play-button" onclick="window.location.href='./flappy-bird/'">Play Now</button>
+            </div>
+
+            <div class="game-card" onclick="window.location.href='./gorillas/'">
+                <h2 class="game-title">Gorillas</h2>
+                <p class="game-description">Throw bananas at your opponent in this turn-based artillery game. Calculate
+                    angle and velocity while accounting for wind effects.</p>
+                <button class="play-button" onclick="window.location.href='./gorillas/'">Play Now</button>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p class="footer-text">Built with AI</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add some interactive effects
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.game-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 10;
+                    const rotateY = (centerX - x) / 10;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px) scale(1.05)`;
+                } else {
+                    card.style.transform = '';
+                }
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const focusedElement = document.activeElement;
+                if (focusedElement.classList.contains('play-button')) {
+                    focusedElement.click();
+                }
+            }
+        });
+
+        // Add focus styles for keyboard navigation
+        document.querySelectorAll('.play-button').forEach(button => {
+            button.addEventListener('focus', () => {
+                button.style.outline = '2px solid #00ff00';
+                button.style.outlineOffset = '4px';
+            });
+
+            button.addEventListener('blur', () => {
+                button.style.outline = 'none';
+            });
+        });
+    </script>
+</body>
+
+</html>
