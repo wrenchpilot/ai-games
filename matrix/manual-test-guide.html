@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manual Test: Character Selection and Chat Flow</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div style="padding: 20px; color: #00ff00; background: #000; font-family: 'Share Tech Mono', monospace;">
+    <h2>Manual Test: Character Selection and Chat Flow</h2>
+    
+    <h3>Test Steps:</h3>
+    <ol style="color: #00ffff;">
+        <li>Go to the main Matrix terminal: <a href="index.html" style="color: #ffff00;">http://localhost:8000/index.html</a></li>
+        <li>Type <code style="color: #ff6b00;">characters</code> to see available characters</li>
+        <li>Type <code style="color: #ff6b00;">chat morpheus hello</code> to select Morpheus and send a message</li>
+        <li>Wait for the response to complete</li>
+        <li>Check if the prompt shows <span style="color: #00ffff;">z3r0c00l@matrix [Morpheus]:~$</span> in cyan color</li>
+        <li>Try different characters: <code style="color: #ff6b00;">chat neo hi</code>, <code style="color: #ff6b00;">chat trinity hey</code></li>
+    </ol>
+    
+    <h3>Expected Behavior:</h3>
+    <ul style="color: #00ff00;">
+        <li>Oracle: Green (success)</li>
+        <li>Morpheus: Cyan (info)</li>
+        <li>Neo: Yellow (warning)</li>
+        <li>Trinity: Green (success)</li>
+        <li>Agent Smith: Red (error)</li>
+    </ul>
+    
+    <h3>What Was Fixed:</h3>
+    <p style="color: #ffff00;">
+        The issue was in the <code>updatePromptDisplay()</code> method. It was checking for both 
+        <code>this.selectedCharacter && this.oracleConnected</code>, but chat commands work 
+        regardless of Oracle connection status. The fix removes the Oracle connection requirement 
+        for prompt color updates.
+    </p>
+    
+    <h3>Fixed Code:</h3>
+    <pre style="background: #111; padding: 10px; border: 1px solid #333;">
+// OLD (broken):
+if (this.selectedCharacter && this.oracleConnected) {
+
+// NEW (fixed):
+if (this.selectedCharacter) {
+    </pre>
+    
+    <p style="color: #00ff00; margin-top: 20px;">
+        <strong>Status: ✅ Fix Applied</strong><br>
+        The prompt should now maintain character-specific colors after chat completion.
+    </p>
+</div>
+</body>
+</html>

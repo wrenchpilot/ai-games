@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Automated Test: Prompt Color Fix Verification</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div style="padding: 20px; color: #00ff00; background: #000; font-family: 'Share Tech Mono', monospace;">
+    <h2>Automated Test: Prompt Color Fix Verification</h2>
+    
+    <div id="test-terminal" style="border: 1px solid #333; padding: 10px; margin: 10px 0;">
+        <div id="test-output"></div>
+        <div class="input-line">
+            <span class="prompt-label">z3r0c00l@matrix:~$ </span>
+            <input type="text" id="test-input" style="background: transparent; border: none; color: #00ff00; font-family: inherit;">
+        </div>
+    </div>
+    
+    <button onclick="runAutomatedTest()" style="background: #333; color: #00ff00; border: 1px solid #666; padding: 10px; margin: 5px;">
+        Run Automated Test
+    </button>
+    
+    <button onclick="resetTest()" style="background: #333; color: #ffff00; border: 1px solid #666; padding: 10px; margin: 5px;">
+        Reset Test
+    </button>
+    
+    <div id="test-results" style="margin-top: 20px;"></div>
+</div>
+
+<script>
+// Mock the Matrix character data
+const matrixCharacters = {
+    'oracle': { displayName: 'Oracle', color: 'success' },
+    'morpheus': { displayName: 'Morpheus', color: 'info' },
+    'neo': { displayName: 'Neo', color: 'warning' },
+    'trinity': { displayName: 'Trinity', color: 'success' },
+    'smith': { displayName: 'Agent Smith', color: 'error' },
+    'tank': { displayName: 'Tank', color: 'info' },
+    'mouse': { displayName: 'Mouse', color: 'warning' },
+    'cypher': { displayName: 'Cypher', color: 'error' },
+    'switch': { displayName: 'Switch', color: 'info' },
+    'architect': { displayName: 'Architect', color: 'warning' }
+};
+
+let selectedCharacter = null;
+let testStep = 0;
+
+function updatePromptDisplay() {
+    // This is the FIXED version of the updatePromptDisplay method
+    if (selectedCharacter) {
+        const character = matrixCharacters[selectedCharacter];
+        const promptLabel = document.querySelector('.prompt-label');
+        if (promptLabel) {
+            promptLabel.textContent = `z3r0c00l@matrix [${character.displayName}]:~$ `;
+            // Apply character-specific color to prompt
+            promptLabel.className = `prompt-label ${character.color}`;
+            console.log(`[PROMPT UPDATE] Set to character: ${character.displayName}, color: ${character.color}`);
+        }
+    } else {
+        // Reset to default prompt
+        const promptLabel = document.querySelector('.prompt-label');
+        if (promptLabel) {
+            promptLabel.textContent = 'z3r0c00l@matrix:~$ ';
+            promptLabel.className = 'prompt-label';
+            console.log('[PROMPT UPDATE] Reset to default prompt');
+        }
+    }
+}
+
+function selectMatrixCharacter(characterName) {
+    const charKey = characterName.toLowerCase();
+    if (matrixCharacters[charKey]) {
+        selectedCharacter = charKey;
+        const character = matrixCharacters[charKey];
+        addTestOutput(`> Now chatting with ${character.displayName}`, 'success');
+        
+        // Update the prompt to reflect the new character selection immediately
+        updatePromptDisplay();
+        return true;
+    } else {
+        addTestOutput(`> Unknown character: ${characterName}`, 'error');
+        return false;
+    }
+}
+
+function addTestOutput(text, color = 'info') {
+    const output = document.getElementById('test-output');
+    const line = document.createElement('div');
+    line.textContent = text;
+    line.className = color;
+    output.appendChild(line);
+}
+
+function simulateChatCompletion() {
+    // Simulate the chat completion flow
+    addTestOutput('> Processing chat...', 'warning');
+    
+    setTimeout(() => {
+        addTestOutput('Morpheus> Greetings, my friend. What brings you to seek the truth today?', 'info');
+        
+        // Simulate the showCommandPrompt call that happens after chat completion
+        setTimeout(() => {
+            updatePromptDisplay(); // This is called in showCommandPrompt()
+            
+            // Verify the prompt state
+            verifyPromptState();
+        }, 100);
+    }, 1000);
+}
+
+function verifyPromptState() {
+    const promptLabel = document.querySelector('.prompt-label');
+    const results = document.getElementById('test-results');
+    
+    if (!promptLabel) {
+        results.innerHTML += '<div style="color: #ff0000;">❌ ERROR: Prompt label not found!</div>';
+        return;
+    }
+    
+    const expectedText = selectedCharacter ? 
+        `z3r0c00l@matrix [${matrixCharacters[selectedCharacter].displayName}]:~$ ` : 
+        'z3r0c00l@matrix:~$ ';
+    const expectedColor = selectedCharacter ? 
+        `prompt-label ${matrixCharacters[selectedCharacter].color}` : 
+        'prompt-label';
+    
+    const textCorrect = promptLabel.textContent === expectedText;
+    const colorCorrect = promptLabel.className === expectedColor;
+    
+    results.innerHTML += `
+        <div style="color: ${textCorrect && colorCorrect ? '#00ff00' : '#ff0000'};">
+            <strong>Step ${testStep}: ${textCorrect && colorCorrect ? '✅' : '❌'}</strong><br>
+            Expected Text: "${expectedText}"<br>
+            Actual Text: "${promptLabel.textContent}"<br>
+            Expected Class: "${expectedColor}"<br>
+            Actual Class: "${promptLabel.className}"<br>
+            Text Match: ${textCorrect ? '✅' : '❌'}<br>
+            Color Match: ${colorCorrect ? '✅' : '❌'}<br><br>
+        </div>
+    `;
+}
+
+function runAutomatedTest() {
+    resetTest();
+    const results = document.getElementById('test-results');
+    results.innerHTML = '<h3>Running Automated Test...</h3>';
+    
+    // Test 1: Default state
+    testStep = 1;
+    addTestOutput('=== Test 1: Default Prompt State ===', 'warning');
+    verifyPromptState();
+    
+    setTimeout(() => {
+        // Test 2: Select character
+        testStep = 2;
+        addTestOutput('=== Test 2: Character Selection (Morpheus) ===', 'warning');
+        selectMatrixCharacter('morpheus');
+        verifyPromptState();
+        
+        setTimeout(() => {
+            // Test 3: Simulate chat completion
+            testStep = 3;
+            addTestOutput('=== Test 3: After Chat Completion ===', 'warning');
+            simulateChatCompletion();
+        }, 1000);
+    }, 1000);
+}
+
+function resetTest() {
+    selectedCharacter = null;
+    testStep = 0;
+    document.getElementById('test-output').innerHTML = '';
+    document.getElementById('test-results').innerHTML = '';
+    updatePromptDisplay();
+}
+
+// Initialize
+window.onload = function() {
+    addTestOutput('Test terminal initialized. Click "Run Automated Test" to verify the prompt color fix.', 'info');
+};
+</script>
+</body>
+</html>

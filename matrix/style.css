@@ -295,3 +295,51 @@ body {
         padding: 15px;
     }
 }
+
+.prompt-label {
+    color: #00ff00;
+    margin-right: 5px;
+    text-shadow: 0 0 5px #00ff00;
+}
+
+/* Character-specific colors */
+.prompt-label.success {
+    color: #00ff00;
+    text-shadow: 0 0 5px #00ff00;
+}
+
+.prompt-label.info {
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff;
+}
+
+.prompt-label.warning {
+    color: #ffff00;
+    text-shadow: 0 0 5px #ffff00;
+}
+
+.prompt-label.error {
+    color: #ff0000;
+    text-shadow: 0 0 5px #ff0000;
+}
+
+/* Prompt-specific character colors (separate from response colors) */
+.prompt-label.prompt-success {
+    color: #00ff00 !important;
+    text-shadow: 0 0 5px #00ff00 !important;
+}
+
+.prompt-label.prompt-info {
+    color: #00ff88 !important;
+    text-shadow: 0 0 5px #00ff88 !important;
+}
+
+.prompt-label.prompt-warning {
+    color: #88ff00 !important;
+    text-shadow: 0 0 5px #88ff00 !important;
+}
+
+.prompt-label.prompt-error {
+    color: #ff4400 !important;
+    text-shadow: 0 0 5px #ff4400 !important;
+}
