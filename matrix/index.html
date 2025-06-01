@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Digital Rain Terminal</title>
+    <!-- Matrix-style fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono:wght@400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="matrix-container">
+        <canvas id="matrix-canvas"></canvas>
+        <div id="terminal" class="terminal">
+            <div id="terminal-header">
+                <span class="terminal-title">MATRIX TERMINAL v1.0</span>
+                <div class="terminal-controls">
+                    <span class="control-hint">ESC: toggle rain | CTRL+C: clear | CTRL+SHIFT+F: fullscreen</span>
+                </div>
+            </div>
+            <div id="terminal-content">
+                <div id="terminal-output"></div>
+                <div id="terminal-input-line" class="input-line">
+                    <span class="prompt">neo@matrix:~$ </span>
+                    <input type="text" id="terminal-input" autocomplete="off" spellcheck="false">
+                    <span class="cursor">|</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
