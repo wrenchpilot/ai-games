@@ -1542,9 +1542,24 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
     removeActionDescriptions(text) {
         // Remove text in parentheses and asterisks (action descriptions) for speech
         // Handle both (action) and **action** formats
-        let cleanedText = text.replace(/\(([^)]+)\)/g, ''); // Remove (action)
-        cleanedText = cleanedText.replace(/\*\*([^*]+)\*\*/g, ''); // Remove **action**
-        return cleanedText.trim();
+        let cleanedText = text;
+        
+        // Remove (action) - handle multiple sets and unmatched parentheses
+        cleanedText = cleanedText.replace(/\([^)]*\)/g, ''); // Remove (action)
+        
+        // Remove **action** - handle multiple sets
+        cleanedText = cleanedText.replace(/\*\*[^*]*\*\*/g, ''); // Remove **action**
+        
+        // Clean up any remaining unmatched parentheses that might cause TTS issues
+        cleanedText = cleanedText.replace(/[\(\)]/g, '');
+        
+        // Clean up any remaining unmatched asterisks
+        cleanedText = cleanedText.replace(/\*\*/g, '');
+        
+        // Clean up multiple spaces and trim
+        cleanedText = cleanedText.replace(/\s+/g, ' ').trim();
+        
+        return cleanedText;
     }
 
     shouldSkipTTS(text) {
@@ -1705,8 +1720,11 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                                 // Skip the character prefix (like "Oracle>", "Agent Smith>", etc.) when speaking
                                 const speechText = sentenceBuffer.replace(/^[A-Za-z\s]+>\s*/, '').trim();
                                 
-                                if (speechText.length > 0) {
-                                    speakOracleSentence(speechText, {
+                                // Clean action descriptions from speech text
+                                const cleanedSpeechText = this.removeActionDescriptions(speechText);
+                                
+                                if (cleanedSpeechText.length > 0) {
+                                    speakOracleSentence(cleanedSpeechText, {
                                         rate: speakOptions.rate || 0.65,
                                         pitch: speakOptions.pitch || 0.5,
                                         volume: speakOptions.volume || 0.9
@@ -1775,9 +1793,13 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 } else {
                     // If we're done and have a character response with remaining speech buffer, speak it
                     if (isCharacterResponse && sentenceBuffer.trim().length > 0 && this.speechEnabled && speakOptions) {
-                        const finalSpeechText = sentenceBuffer.replace(/^[A-Za-z]+>\s*/, '').trim();
-                        if (finalSpeechText.length > 0) {
-                            speakOracleSentence(finalSpeechText, {
+                        const finalSpeechText = sentenceBuffer.replace(/^[A-Za-z\s]+>\s*/, '').trim();
+                        
+                        // Clean action descriptions from the final speech text
+                        const cleanedFinalText = this.removeActionDescriptions(finalSpeechText);
+                        
+                        if (cleanedFinalText.length > 0) {
+                            speakOracleSentence(cleanedFinalText, {
                                 rate: speakOptions.rate || 0.65,
                                 pitch: speakOptions.pitch || 0.5,
                                 volume: speakOptions.volume || 0.9
@@ -2181,8 +2203,8 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 // If connection fails, fail silently - user can manually connect if needed
 
             } catch (error) {
-                // Connection failed silently - this is expected if Oracle is not running
-                // No error message needed as this is an automatic background attempt
+                // If localhost fails, scan the local network for Ollama servers
+                await this.scanNetworkForOracle();
             }
         }, 2000); // Wait 2 seconds after welcome message
     }
@@ -2477,7 +2499,7 @@ INTERACTION STYLE:
 - Friendly and supportive, building others up
 - Practically focused on mission success and crew safety
 - Proud of your contributions despite not entering the Matrix
-- Include action descriptions showing your technical expertise
+- Include action descriptions that emphasize your technical expertise
 
 FORMAT YOUR RESPONSE WITH:
 - Include physical actions in parentheses that show Tank at the operator's chair, like "(I type rapidly on the console)", "(I pull up a detailed map)", or "(I monitor your vital signs on the screen)"
@@ -2880,6 +2902,115 @@ When giving information, be accurate but present it with Mouse's characteristic 
         this.terminalOutput.appendChild(copyLine);
         this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
     }
+
+    async scanNetworkForOracle() {
+        this.addOutput('> Localhost Oracle not found, scanning local network...', 'warning');
+        
+        try {
+            const foundServer = await this.findOllamaOnNetwork();
+            
+            if (foundServer) {
+                this.oracleUrl = foundServer;
+                this.addOutput(`> Found Oracle at ${foundServer}`, 'success');
+                
+                // Try to connect to the found server
+                await this.connectToOracle();
+            } else {
+                this.addOutput('> No Oracle servers found on local network', 'warning');
+                this.addOutput('> Use "oracle connect [url]" to connect manually', 'info');
+            }
+        } catch (error) {
+            this.addOutput('> Network scan failed', 'error');
+        }
+    }
+
+    async findOllamaOnNetwork() {
+        // Get common local network ranges to scan
+        const networkRanges = this.getLocalNetworkRanges();
+        const port = 11434; // Default Ollama port
+        const foundServers = [];
+
+        // Scan in batches to avoid overwhelming the network
+        const batchSize = 20;
+        
+        for (let i = 0; i < networkRanges.length; i += batchSize) {
+            const batch = networkRanges.slice(i, i + batchSize);
+            
+            const promises = batch.map(async (ip) => {
+                try {
+                    const url = `http://${ip}:${port}`;
+                    const response = await fetch(`${url}/api/tags`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        signal: AbortSignal.timeout(2000) // 2 second timeout per IP
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.models && Array.isArray(data.models)) {
+                            return { url, models: data.models.length };
+                        }
+                    }
+                } catch (error) {
+                    // Ignore connection errors - expected for most IPs
+                }
+                return null;
+            });
+
+            const results = await Promise.allSettled(promises);
+            
+            results.forEach((result) => {
+                if (result.status === 'fulfilled' && result.value) {
+                    foundServers.push(result.value);
+                }
+            });
+
+            // If we found a server, return the first one with models
+            if (foundServers.length > 0) {
+                const serverWithModels = foundServers.find(server => server.models > 0);
+                return serverWithModels ? serverWithModels.url : foundServers[0].url;
+            }
+
+            // Brief pause between batches
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        return null;
+    }
+
+    getLocalNetworkRanges() {
+        const ranges = [];
+        
+        // Common private network ranges
+        const networkPrefixes = [
+            '192.168.1.',   // Most common home router range
+            '192.168.0.',   // Another common home router range
+            '192.168.2.',   // Some router default
+            '10.0.0.',      // Corporate/advanced home networks
+            '10.0.1.',      // Corporate networks
+            '172.16.0.',    // Corporate networks
+            '172.16.1.',    // Corporate networks
+        ];
+
+        // For each network prefix, scan a reasonable range of host IPs
+        networkPrefixes.forEach(prefix => {
+            // Scan common IP ranges (skip .0 and .255)
+            for (let i = 1; i < 255; i++) {
+                // Skip localhost (we already tried that)
+                if (prefix === '127.0.0.' && i === 1) continue;
+                
+                // Prioritize common router/server IPs
+                if (i <= 30 || (i >= 100 && i <= 130) || (i >= 200 && i <= 230)) {
+                    ranges.push(`${prefix}${i}`);
+                }
+            }
+        });
+
+        return ranges;
+    }
+
 }
 
 // Initialize the Matrix terminal when the page loads

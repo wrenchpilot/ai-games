@@ -1,6 +1,6 @@
 # 🕹️ AI Generated Games Arcade
 
-A collection of classic retro-style arcade games built with HTML5 Canvas and vanilla JavaScript. This project showcases three iconic games recreated with modern web technologies while maintaining that nostalgic 80s/90s arcade aesthetic.
+A collection of classic retro-style arcade games built with HTML5 Canvas and vanilla JavaScript. This project showcases four iconic games recreated with modern web technologies while maintaining that nostalgic 80s/90s arcade aesthetic.
 
 ## 🎮 Games Collection
 
@@ -36,6 +36,22 @@ Turn-based artillery combat featuring:
 - **Destructible Terrain**: Buildings get damaged by explosions
 - **Progressive AI**: Gets smarter as rounds progress
 - **Visual Effects**: Explosion animations and trajectory trails
+
+### 🕸️ Matrix Terminal
+
+Interactive Matrix digital rain terminal featuring:
+
+- **Digital Rain Animation**: Authentic falling characters with Japanese katakana
+- **AI Chat Integration**: Chat with Matrix characters via Ollama (Oracle, Morpheus, Trinity, Neo, Agent Smith, etc.)
+- **Character Personalities**: Each character has unique prompts and speaking styles
+- **Text-to-Speech**: Immersive voice synthesis with character-specific voices
+- **Network Discovery**: Automatically finds Ollama servers on local network
+- **Terminal Commands**: Full command-line interface with Matrix-themed commands
+- **Cyberpunk Modes**: Toggle between classic Matrix and cyberpunk symbol modes
+- **Voice Controls**: Complete TTS configuration and voice selection
+- **Copy Features**: Click to copy AI responses to clipboard
+- **Authentic Experience**: Realistic terminal feel with Matrix quotes and sequences
+- **Ollama Integration**: Requires Ollama with llama3.1 or compatible models for AI features
 
 ## 🎨 Design Features
 
@@ -85,6 +101,18 @@ Turn-based artillery combat featuring:
 
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - Local web server (for development)
+- **For Matrix Terminal AI features**: Ollama with llama3.1 or compatible models
+
+#### Matrix Terminal AI Setup
+
+To use the Matrix Terminal's AI chat features:
+
+1. **Install Ollama**: Download from [ollama.ai](https://ollama.ai)
+2. **Start Ollama**: Run `ollama serve` in terminal
+3. **Install a model**: Run `ollama pull llama3.1`
+4. **Open Matrix Terminal**: The terminal will auto-connect to Ollama
+
+See the [Matrix Terminal README](matrix/README.md) for detailed setup instructions.
 
 ### Installation
 
@@ -146,6 +174,11 @@ ai-games/
 │   ├── index.html            # Gorillas game page
 │   ├── game.js               # Game logic
 │   └── style.css             # Game styling
+└── matrix/
+    ├── index.html            # Matrix Terminal page
+    ├── script.js             # Terminal logic and AI integration
+    ├── style.css             # Matrix-themed styling
+    └── README.md             # Detailed Matrix Terminal documentation
 ```
 
 ## 🎮 Controls
@@ -168,6 +201,28 @@ ai-games/
 - **Number Inputs**: Set angle (0-90°) and velocity (1-100)
 - **Fire Button**: Launch banana
 - **Spacebar**: Fire (alternative)
+
+### Matrix Terminal
+
+- **ESC**: Toggle matrix rain on/off
+- **CTRL+C**: Clear terminal output / Interrupt operations
+- **CTRL+SHIFT+F**: Toggle fullscreen mode
+- **Terminal Commands**: Type commands like `help`, `oracle connect`, `chat [character] [message]`
+- **Tab Completion**: Auto-complete commands and character names
+- **Voice Commands**: `voice on/off`, `voice rate [speed]`, etc.
+- **Chat**: Interact with AI-powered Matrix characters via Ollama
+
+#### Available Matrix Characters for AI Chat
+
+- **Oracle** - The wise prophet who sees all possible futures
+- **Morpheus** - The confident leader and mentor
+- **Trinity** - The skilled hacker and fighter
+- **Neo** - The chosen one, learning about his powers
+- **Agent Smith** - The ruthless program hunting anomalies
+- **Tank** - The loyal operator never plugged into the Matrix
+- **Architect** - The cold creator of the Matrix system
+- **Cypher** - The disillusioned crew member
+- And more characters with unique personalities!
 
 ## 🎯 Game Features
 
