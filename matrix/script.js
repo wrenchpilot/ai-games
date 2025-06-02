@@ -926,7 +926,7 @@ class MatrixRain {
         this.addOutput('chat [char] [text] - Chat with Matrix characters', 'info');
         this.addOutput('ask [text]    - Same as chat command', 'info');
         this.addOutput('', 'success');
-        this.addOutput('Note: TTS automatically skips long responses or code', 'warning');
+        this.addOutput('Note: TTS automatically skips code and character actions', 'warning');
         this.addOutput('Use CTRL+C to interrupt any operation or speech', 'warning');
         this.addOutput('exit          - Attempt to exit (spoiler: you can\'t)', 'info');
     }
