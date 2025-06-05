@@ -6,6 +6,16 @@ class MatrixRain {
         this.terminalInput = document.getElementById('terminal-input');
         this.terminalOutput = document.getElementById('terminal-output');
         this.terminalInputLine = document.getElementById('terminal-input-line');
+        
+        // Login system
+        this.loginScreen = document.getElementById('login-screen');
+        this.loginForm = document.getElementById('login-form');
+        this.loginMessages = document.getElementById('login-messages');
+        this.usernameInput = document.getElementById('username-input');
+        this.passwordInput = document.getElementById('password-input');
+        this.loginButton = document.getElementById('login-button');
+        this.currentUser = 'user'; // Default username
+        this.isLoggedIn = false;
 
         this.isRaining = true;
         this.isFullscreen = false;
@@ -159,8 +169,8 @@ class MatrixRain {
         this.setupEventListeners();
         this.createMinimizeButton();
         this.loadVoices();
-        this.showWelcome();
-        this.autoConnectToOracle();
+        this.setupLoginScreen();
+        // Don't show welcome or auto-connect until after login
     }
 
     init() {
@@ -168,8 +178,7 @@ class MatrixRain {
         this.initDrops();
         this.animate();
 
-        // Focus on input
-        this.terminalInput.focus();
+        // Don't focus on terminal input initially - login screen will handle focus
     }
 
     resizeCanvas() {
@@ -561,7 +570,7 @@ class MatrixRain {
             const character = this.matrixCharacters[this.selectedCharacter];
             const promptLabel = document.querySelector('.prompt-label');
             if (promptLabel) {
-                promptLabel.textContent = `z3r0c00l@matrix [${character.displayName}]:~$ `;
+                promptLabel.textContent = `${this.currentUser}@zion [${character.displayName}]:~$ `;
                 // Keep the prompt the original Matrix green color regardless of character
                 promptLabel.className = 'prompt-label';
                 console.log(`[PROMPT UPDATE] Set to character: ${character.displayName}, keeping original green color`);
@@ -570,7 +579,7 @@ class MatrixRain {
             // Reset to default prompt
             const promptLabel = document.querySelector('.prompt-label');
             if (promptLabel) {
-                promptLabel.textContent = 'z3r0c00l@matrix:~$ ';
+                promptLabel.textContent = `${this.currentUser}@zion:~$ `;
                 promptLabel.className = 'prompt-label';
                 console.log('[PROMPT UPDATE] Reset to default prompt');
             }
@@ -787,8 +796,10 @@ class MatrixRain {
 
     showWelcome() {
         this.addOutput('='.repeat(60), 'success');
-        this.addOutput('WELCOME TO THE MATRIX TERMINAL', 'success');
+        this.addOutput('WELCOME TO THE ZION TERMINAL', 'success');
         this.addOutput('='.repeat(60), 'success');
+        this.addOutput('', 'success');
+        this.addOutput(`Access granted for user: ${this.currentUser}`, 'info');
         this.addOutput('', 'success');
         this.addOutput('Available commands:', 'info');
         this.addOutput('  help          - Show available commands', 'info');
@@ -833,7 +844,7 @@ class MatrixRain {
         this.addToHistory(command);
 
         // Display command (use original case for display)
-        this.addOutput(`z3r0c00l@matrix:~$ ${command}`, 'success');
+        this.addOutput(`${this.currentUser}@zion:~$ ${command}`, 'success');
 
         switch (cmd) {
             case 'help':
@@ -908,7 +919,7 @@ class MatrixRain {
     }
 
     showHelp() {
-        this.addOutput('Matrix Terminal Commands:', 'info');
+        this.addOutput('Zion Terminal Commands:', 'info');
         this.addOutput('', 'success');
         this.addOutput('help          - Show this help message', 'info');
         this.addOutput('ls            - List all available commands (like filesystem ls)', 'info');
@@ -3009,6 +3020,166 @@ When giving information, be accurate but present it with Mouse's characteristic 
         });
 
         return ranges;
+    }
+
+    // Login Screen Methods
+    setupLoginScreen() {
+        // Show login form after messages have displayed
+        setTimeout(() => {
+            this.loginForm.style.display = 'block';
+            this.usernameInput.focus();
+        }, 4500); // Wait for messages to finish
+
+        // Setup login form event listeners
+        this.setupLoginEventListeners();
+    }
+
+    setupLoginEventListeners() {
+        // Handle login button click
+        this.loginButton.addEventListener('click', () => this.attemptLogin());
+
+        // Handle Enter key in form fields
+        this.usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                this.passwordInput.focus();
+            }
+        });
+
+        this.passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                this.attemptLogin();
+            }
+        });
+
+        // Prevent form submission
+        this.loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.attemptLogin();
+        });
+    }
+
+    async attemptLogin() {
+        const username = this.usernameInput.value.trim();
+        const password = this.passwordInput.value.trim();
+
+        if (!username) {
+            this.showLoginError('Username required');
+            this.usernameInput.focus();
+            return;
+        }
+
+        if (!password) {
+            this.showLoginError('Password required');
+            this.passwordInput.focus();
+            return;
+        }
+
+        // Disable form during authentication
+        this.setLoginFormEnabled(false);
+
+        // Show authentication progress
+        await this.showAuthenticationProgress(username);
+
+        // Store username and proceed to main terminal
+        this.currentUser = username;
+        this.isLoggedIn = true;
+        this.hideLoginScreen();
+        this.showMainTerminal();
+    }
+
+    showLoginError(message) {
+        // Remove any existing error
+        const existingError = this.loginForm.querySelector('.login-error');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        // Add new error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'login-error';
+        errorDiv.style.cssText = `
+            color: #ff0000;
+            text-shadow: 0 0 5px #ff0000;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        `;
+        errorDiv.textContent = message;
+        this.loginForm.appendChild(errorDiv);
+
+        // Remove error after 3 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 3000);
+    }
+
+    setLoginFormEnabled(enabled) {
+        this.usernameInput.disabled = !enabled;
+        this.passwordInput.disabled = !enabled;
+        this.loginButton.disabled = !enabled;
+        
+        if (enabled) {
+            this.loginButton.textContent = 'ACCESS MAINFRAME';
+        } else {
+            this.loginButton.textContent = 'AUTHENTICATING...';
+        }
+    }
+
+    async showAuthenticationProgress(username) {
+        // Clear form and show progress
+        this.loginForm.innerHTML = `
+            <div class="auth-progress">
+                <div>Authenticating user: ${username}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div id="auth-status">Verifying credentials...</div>
+            </div>
+        `;
+
+        const authStatus = document.getElementById('auth-status');
+        
+        // Simulate authentication steps
+        await new Promise(resolve => setTimeout(resolve, 800));
+        authStatus.textContent = 'Checking access permissions...';
+        
+        await new Promise(resolve => setTimeout(resolve, 600));
+        authStatus.textContent = 'Establishing secure session...';
+        
+        await new Promise(resolve => setTimeout(resolve, 600));
+        authStatus.textContent = 'Access granted!';
+        authStatus.style.color = '#00ff00';
+        
+        // Add access granted effect
+        this.loginForm.parentElement.classList.add('access-granted');
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    hideLoginScreen() {
+        this.loginScreen.style.opacity = '0';
+        this.loginScreen.style.transition = 'opacity 0.5s ease-out';
+        
+        setTimeout(() => {
+            this.loginScreen.style.display = 'none';
+        }, 500);
+    }
+
+    showMainTerminal() {
+        this.terminal.style.display = 'flex';
+        this.terminal.style.opacity = '0';
+        this.terminal.style.transition = 'opacity 0.5s ease-in';
+        
+        setTimeout(() => {
+            this.terminal.style.opacity = '1';
+            this.updatePromptDisplay();
+            this.showWelcome();
+            this.autoConnectToOracle();
+            this.terminalInput.focus();
+        }, 100);
     }
 
 }

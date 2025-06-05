@@ -13,9 +13,47 @@
 <body>
     <div id="matrix-container">
         <canvas id="matrix-canvas"></canvas>
-        <div id="terminal" class="terminal">
+        
+        <!-- Login Screen -->
+        <div id="login-screen" class="login-screen">
+            <div class="login-container">
+                <div class="login-header">
+                    <div class="system-title">ZION MAINFRAME</div>
+                    <div class="system-subtitle">SECURE ACCESS TERMINAL</div>
+                    <div class="system-version">v2.1.0</div>
+                </div>
+                
+                <div class="login-messages" id="login-messages">
+                    <div class="login-line">Initializing secure connection...</div>
+                    <div class="login-line">Establishing encrypted tunnel...</div>
+                    <div class="login-line">Connection established.</div>
+                    <div class="login-line"></div>
+                    <div class="login-line">AUTHORIZATION REQUIRED</div>
+                </div>
+                
+                <div class="login-form" id="login-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="username-input">Username:</label>
+                        <input type="text" id="username-input" autocomplete="off" spellcheck="false" maxlength="16">
+                    </div>
+                    <div class="form-group">
+                        <label for="password-input">Password:</label>
+                        <input type="password" id="password-input" autocomplete="off" spellcheck="false" maxlength="32">
+                    </div>
+                    <div class="login-button-container">
+                        <button id="login-button" class="login-button">ACCESS MAINFRAME</button>
+                    </div>
+                    <div class="login-hint">
+                        Enter any username and password to access the system
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Terminal (initially hidden) -->
+        <div id="terminal" class="terminal" style="display: none;">
             <div id="terminal-header">
-                <span class="terminal-title">MATRIX TERMINAL v1.0</span>
+                <span class="terminal-title">ZION TERMINAL v1.0</span>
                 <div class="terminal-controls">
                     <span class="control-hint">ESC: toggle rain | CTRL+C: clear | CTRL+SHIFT+F: fullscreen</span>
                 </div>
@@ -23,7 +61,7 @@
             <div id="terminal-content">
                 <div id="terminal-output"></div>
                 <div id="terminal-input-line" class="input-line">
-                    <span class="prompt-label">z3r0c00l@matrix:~$ </span>
+                    <span class="prompt-label">user@zion:~$ </span>
                     <input type="text" id="terminal-input" autocomplete="off" spellcheck="false">
                 </div>
             </div>
