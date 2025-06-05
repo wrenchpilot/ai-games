@@ -6,7 +6,7 @@ class MatrixRain {
         this.terminalInput = document.getElementById('terminal-input');
         this.terminalOutput = document.getElementById('terminal-output');
         this.terminalInputLine = document.getElementById('terminal-input-line');
-        
+
         // Login system
         this.loginScreen = document.getElementById('login-screen');
         this.loginForm = document.getElementById('login-form');
@@ -465,7 +465,7 @@ class MatrixRain {
     showCommandPrompt() {
         // Update the prompt display first
         this.updatePromptDisplay();
-        
+
         // Then show the input line and focus
         this.terminalInputLine.style.display = 'flex';
         this.terminalInput.focus();
@@ -616,7 +616,7 @@ class MatrixRain {
                 matches = ['0.5', '0.8', '1.0', '1.5', '2.0'].filter(rate => rate.startsWith(currentWord));
             } else if (mainCommand === 'chat' || mainCommand === 'ask') {
                 // Offer character completions for chat/ask command
-                matches = characterSubCommands.filter(char => 
+                matches = characterSubCommands.filter(char =>
                     char.startsWith(currentWord.toLowerCase()));
             }
         } else if (words.length === 3) {
@@ -819,7 +819,7 @@ class MatrixRain {
         if (!this.isProcessing && !this.isAnimating) {
             this.terminalInput.value = '';
         }
-        
+
         // Save session after command execution to preserve terminal history
         this.saveSession();
     }
@@ -857,8 +857,8 @@ class MatrixRain {
 
         // Simple list of command names only (like Unix ls)
         const commands = [
-            'ask', 'chat', 'characters', 'clear', 'exit', 'fs', 'fullscreen', 
-            'help', 'home', 'logout', 'ls', 'matrix', 'mode', 'neo', 'oracle', 
+            'ask', 'chat', 'characters', 'clear', 'exit', 'fs', 'fullscreen',
+            'help', 'home', 'logout', 'ls', 'matrix', 'mode', 'neo', 'oracle',
             'say', 'session', 'speed', 'toggle', 'tts', 'voice'
         ];
 
@@ -871,7 +871,7 @@ class MatrixRain {
                 output = '  ';
             }
         });
-        
+
         // Display remaining commands if any
         if (output.trim().length > 0) {
             this.addOutput(output, 'info');
@@ -891,7 +891,7 @@ class MatrixRain {
             for (let drop of this.drops) {
                 drop.speed = Math.random() * this.speed + 0.5;
             }
-            
+
             // Save session after speed change
             this.saveSession();
         } else {
@@ -1129,7 +1129,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         this.addOutput(`  Chat Messages: ${this.chatHistory.length}`, 'info');
         this.addOutput(`  Commands: ${this.commandHistory.length}`, 'info');
         this.addOutput('', 'success');
-        
+
         // Show which sessions exist in localStorage
         this.addOutput('Available Sessions:', 'warning');
         let sessionCount = 0;
@@ -1157,7 +1157,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
     navigateHome() {
         this.addOutput('', 'success');
         this.addOutput('Initiating navigation to main games index...', 'warning');
-        
+
         if (this.speechEnabled) {
             this.speak('Navigating to main games index...', { rate: 0.8, pitch: 0.8 });
         }
@@ -1166,14 +1166,14 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             if (!this.isOperationCancelled) {
                 this.addOutput('Exiting the Matrix...', 'info');
                 this.addOutput('Reality protocols activated', 'success');
-                
+
                 if (this.speechEnabled) {
                     this.speak('Welcome back to reality', { rate: 0.7, pitch: 1.0 });
                 }
-                
+
                 // Save session before navigation
                 this.saveSession();
-                
+
                 // Navigate to the main games index
                 setTimeout(() => {
                     window.location.href = '../index.html';
@@ -1186,21 +1186,21 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
     logout() {
         // Save current session before logout
         this.saveSession();
-        
+
         this.addOutput('', 'success');
         this.addOutput('Logging out...', 'warning');
         this.addOutput('Session saved successfully', 'info');
         this.addOutput('Returning to login screen...', 'info');
-        
+
         // Speak logout messages with proper timing
         if (this.speechEnabled) {
             // Make sure any previous speech is cancelled
             if (this.speechSynthesis && this.speechSynthesis.speaking) {
                 this.speechSynthesis.cancel();
             }
-            
+
             this.speak('Logging out. Welcome back to the real world.', { rate: 0.8, pitch: 0.7 });
-            
+
             // Delay logout actions to allow speech to complete
             const timeoutId = setTimeout(() => {
                 // Don't cancel speech here - let it complete naturally
@@ -1212,29 +1212,29 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             this.completeLogout();
         }
     }
-    
+
     completeLogout() {
         // Reset login state
         this.isLoggedIn = false;
         this.currentUser = null;
-        
+
         // Hide terminal and show login screen
         this.terminal.style.display = 'none';
-        
+
         // Hide minimize button (only shown when logged in)
         const minimizeBtn = document.getElementById('minimize-btn');
         if (minimizeBtn) {
             minimizeBtn.style.display = 'none';
         }
-        
+
         // Reset and show login screen
         this.loginScreen.style.display = 'flex';
         this.loginScreen.style.opacity = '1';
         this.loginScreen.style.transition = 'opacity 0.5s ease-in';
-        
+
         // Remove access granted effect if it exists
         this.loginForm.parentElement.classList.remove('access-granted');
-        
+
         // Reset login form to original HTML structure (overwrite authentication progress)
         this.loginForm.innerHTML = `
             <div class="form-group">
@@ -1252,25 +1252,25 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 Enter any username and password to access the system
             </div>
         `;
-        
+
         // Re-get references to the new elements
         this.usernameInput = document.getElementById('username-input');
         this.passwordInput = document.getElementById('password-input');
         this.loginButton = document.getElementById('login-button');
-        
+
         // Reset login form properties
         this.usernameInput.value = '';
         this.passwordInput.value = '';
         this.usernameInput.disabled = false;
         this.passwordInput.disabled = false;
         this.loginButton.disabled = false;
-        
+
         // Show the login form immediately (don't wait for animation)
         this.loginForm.style.display = 'block';
-        
+
         // Re-setup event listeners for the new elements
         this.setupLoginEventListeners();
-        
+
         // Focus on username input
         setTimeout(() => {
             this.usernameInput.focus();
@@ -1462,7 +1462,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         if (this.speechEnabled) {
             this.speak('Voice selection updated', { voice: this.selectedVoice });
         }
-        
+
         // Save session after voice selection change
         this.saveSession();
     }
@@ -1535,22 +1535,22 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
     async loadCharacters() {
         try {
             console.log('[CHARACTERS] Loading character manifest...');
-            
+
             // First, load the character manifest YAML file
             const manifestResponse = await fetch('prompts/characters.yaml');
             if (!manifestResponse.ok) {
                 throw new Error(`Could not load character manifest: ${manifestResponse.status}`);
             }
-            
+
             const manifestText = await manifestResponse.text();
             const manifest = jsyaml.load(manifestText);
-            
+
             if (!manifest || !manifest.characters || !Array.isArray(manifest.characters)) {
                 throw new Error('Invalid character manifest format');
             }
-            
+
             console.log(`[CHARACTERS] Found ${manifest.characters.length} characters in manifest`);
-            
+
             // Load each character file from the manifest
             for (const filename of manifest.characters) {
                 try {
@@ -1558,13 +1558,13 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                     if (response.ok) {
                         const yamlText = await response.text();
                         const characterData = jsyaml.load(yamlText);
-                        
+
                         // Extract character key from filename (remove .yaml extension)
                         const characterKey = filename.replace('.yaml', '').toLowerCase();
-                        
+
                         // Store in matrixCharacters object
                         this.matrixCharacters[characterKey] = characterData;
-                        
+
                         console.log(`[CHARACTERS] Loaded ${characterKey}: ${characterData.name}`);
                     } else {
                         console.warn(`[CHARACTERS] Could not load ${filename}: ${response.status}`);
@@ -1573,10 +1573,10 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                     console.error(`[CHARACTERS] Error loading ${filename}:`, error);
                 }
             }
-            
+
             this.charactersLoaded = true;
             console.log(`[CHARACTERS] Loaded ${Object.keys(this.matrixCharacters).length} characters`);
-            
+
         } catch (error) {
             console.error('[CHARACTERS] Failed to load characters:', error);
             // Fallback: initialize with empty object so the game still works
@@ -1699,22 +1699,22 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         // Remove text in parentheses and asterisks (action descriptions) for speech
         // Handle both (action) and **action** formats
         let cleanedText = text;
-        
+
         // Remove (action) - handle multiple sets and unmatched parentheses
         cleanedText = cleanedText.replace(/\([^)]*\)/g, ''); // Remove (action)
-        
+
         // Remove **action** - handle multiple sets
         cleanedText = cleanedText.replace(/\*\*[^*]*\*\*/g, ''); // Remove **action**
-        
+
         // Clean up any remaining unmatched parentheses that might cause TTS issues
         cleanedText = cleanedText.replace(/[\(\)]/g, '');
-        
+
         // Clean up any remaining unmatched asterisks
         cleanedText = cleanedText.replace(/\*\*/g, '');
-        
+
         // Clean up multiple spaces and trim
         cleanedText = cleanedText.replace(/\s+/g, ' ').trim();
-        
+
         return cleanedText;
     }
 
@@ -1785,51 +1785,51 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 resolve();
                 return;
             }
-            
+
             // Check if this is a character response by looking for character name prefix
-            const isCharacterResponse = /^[A-Za-z\s]+>\s/.test(text) || 
-                                      this.selectedCharacter !== null ||
-                                      /\([^)]+\)/.test(text) || 
-                                      /\*\*[^*]+\*\*/.test(text);
-            
+            const isCharacterResponse = /^[A-Za-z\s]+>\s/.test(text) ||
+                this.selectedCharacter !== null ||
+                /\([^)]+\)/.test(text) ||
+                /\*\*[^*]+\*\*/.test(text);
+
             // Special handling for character responses to make speech flow naturally
             let speechBuffer = '';
             let inParentheses = false;
             let sentenceBuffer = '';
-            
+
             let currentIndex = 0;
             const words = text.split(/(\s+)/); // Split but keep whitespace
             let currentWordIndex = 0;
             let currentWordProgress = 0;
             let wordsSpokeFlag = new Set(); // Track which words we've spoken
             let lastSpokenIndex = -1;
-            
+
             // For Oracle speech, we'll use phrases/sentences instead of single words
             const speakOracleSentence = (sentence, options) => {
                 if (!sentence.trim()) return;
-                
+
                 // Clean the sentence for better TTS
                 const cleanedSentence = this.cleanTextForSpeech(sentence);
                 if (!cleanedSentence.trim()) return;
-                
+
                 // Create a natural pause at sentence boundaries
                 const pausePattern = /[.!?]$/;
                 const shouldPause = pausePattern.test(cleanedSentence);
-                
+
                 const utterance = new SpeechSynthesisUtterance(cleanedSentence);
                 utterance.rate = options.rate || this.speechRate;
                 utterance.pitch = options.pitch || this.speechPitch;
                 utterance.volume = options.volume || this.speechVolume;
-                
+
                 if (this.selectedVoice) {
                     utterance.voice = this.selectedVoice;
                 }
-                
+
                 // Add slight delay to make speech feel more natural
                 const speechTimeoutId = setTimeout(() => {
                     if (!this.isOperationCancelled) {
                         this.speechSynthesis.speak(utterance);
-                        
+
                         // If this is the end of a sentence, add a slight pause
                         if (shouldPause) {
                             const pauseUtterance = new SpeechSynthesisUtterance(' ');
@@ -1850,10 +1850,10 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
 
                 if (currentIndex < text.length) {
                     const char = text[currentIndex];
-                    
+
                     // Add character to display
                     line.textContent += char;
-                    
+
                     // Special handling for character responses to filter out action descriptions for speech
                     if (isCharacterResponse && this.speechEnabled && speakOptions) {
                         // Track if we're inside parentheses or asterisks (action descriptions)
@@ -1868,21 +1868,21 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                         } else if (char === '*' && text[currentIndex - 1] === '*' && inParentheses) {
                             inParentheses = false; // End of **action**
                         }
-                        
+
                         // Only collect characters for speech if not in parentheses/asterisks
                         if (!inParentheses) {
                             sentenceBuffer += char;
-                                
+
                             // If we hit end of sentence or a significant phrase, speak it
-                            if (char === '.' || char === '!' || char === '?' || 
+                            if (char === '.' || char === '!' || char === '?' ||
                                 (sentenceBuffer.length > 30 && char === ' ' && sentenceBuffer.trim().length > 0)) {
-                                
+
                                 // Skip the character prefix (like "Oracle>", "Agent Smith>", etc.) when speaking
                                 const speechText = sentenceBuffer.replace(/^[A-Za-z\s]+>\s*/, '').trim();
-                                
+
                                 // Clean action descriptions from speech text
                                 const cleanedSpeechText = this.removeActionDescriptions(speechText);
-                                
+
                                 if (cleanedSpeechText.length > 0) {
                                     speakOracleSentence(cleanedSpeechText, {
                                         rate: speakOptions.rate || 0.65,
@@ -1890,7 +1890,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                                         volume: speakOptions.volume || 0.9
                                     });
                                 }
-                                
+
                                 // Clear the buffer after speaking
                                 sentenceBuffer = '';
                             }
@@ -1933,7 +1933,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                                 if (this.selectedVoice) {
                                     wordUtterance.voice = this.selectedVoice;
                                 }
-                                
+
                                 // Add slight delay to make speech feel more natural
                                 const speechTimeoutId = setTimeout(() => {
                                     if (!this.isOperationCancelled) {
@@ -1954,10 +1954,10 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                     // If we're done and have a character response with remaining speech buffer, speak it
                     if (isCharacterResponse && sentenceBuffer.trim().length > 0 && this.speechEnabled && speakOptions) {
                         const finalSpeechText = sentenceBuffer.replace(/^[A-Za-z\s]+>\s*/, '').trim();
-                        
+
                         // Clean action descriptions from the final speech text
                         const cleanedFinalText = this.removeActionDescriptions(finalSpeechText);
-                        
+
                         if (cleanedFinalText.length > 0) {
                             speakOracleSentence(cleanedFinalText, {
                                 rate: speakOptions.rate || 0.65,
@@ -2181,14 +2181,14 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             this.terminalInput.value = ''; // Clear input for error cases
             return;
         }
-        
+
         // Check if first argument is a character name
         const firstArg = args[0].toLowerCase();
         if (this.matrixCharacters[firstArg]) {
             // Set the character and remove it from the message
             this.selectMatrixCharacter(firstArg);
             args.shift(); // Remove the character name from args
-            
+
             // If no message provided after character name
             if (args.length === 0) {
                 this.addOutput(`> Now chatting with ${this.matrixCharacters[this.selectedCharacter].name}. What would you like to say?`, 'info');
@@ -2198,7 +2198,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 return;
             }
         }
-        
+
         // Get the current character
         const character = this.matrixCharacters[this.selectedCharacter];
 
@@ -2258,10 +2258,10 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
 
                 // Check if the response is suitable for TTS
                 const shouldSkipSpeech = this.shouldSkipTTS(aiMessage);
-                
+
                 // Format the character's name for display
                 const characterPrefix = `${character.displayName}> `;
-                
+
                 // Display AI response with typing effect, styling it with character's color
                 // If TTS is enabled and suitable, speak as we type
                 if (this.speechEnabled && !shouldSkipSpeech) {
@@ -2274,7 +2274,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 } else {
                     // Just type without speech
                     await this.typeMessageWithSync(`${characterPrefix}${aiMessage}`, character.color, 15);
-                    
+
                     // If TTS is enabled but skipped, notify the user
                     if (this.speechEnabled && shouldSkipSpeech) {
                         this.addOutput('> TTS skipped (response contains code or is too long)', 'warning');
@@ -2338,7 +2338,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         setTimeout(async () => {
             // Add a message about attempting Oracle reconnection
             this.addOutput('> Attempting to reconnect to Oracle...', 'info');
-            
+
             try {
                 // Attempt to connect to the Oracle host (either default or restored from session)
                 const response = await fetch(`${this.oracleUrl}/api/tags`, {
@@ -2407,7 +2407,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                         this.addOutput('> No models found. Install models with "ollama pull [model]"', 'warning');
                     }
                     this.addOutput('', 'success');
-                    
+
                     // Save session after successful Oracle reconnection
                     this.saveSession();
                 }
@@ -2473,20 +2473,20 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
     selectMatrixCharacter(characterName) {
         // Convert to lowercase
         const charKey = characterName.toLowerCase();
-        
+
         // Check if character exists
         if (this.matrixCharacters[charKey]) {
             this.selectedCharacter = charKey;
             const character = this.matrixCharacters[charKey];
             this.addOutput(`> Now chatting with ${character.name}`, 'success');
             this.addOutput(`> Use "chat [message]" to talk to ${character.name}`, 'info');
-            
+
             // Reset character-specific chat history
             this.chatHistory = [];
-            
+
             // Update the prompt to reflect the new character selection immediately
             this.updatePromptDisplay();
-            
+
             if (this.speechEnabled) {
                 this.speak(`Now speaking with ${character.name}`, {
                     rate: character.speechRate,
@@ -2494,10 +2494,10 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                     volume: character.speechVolume
                 });
             }
-            
+
             // Save session after character selection
             this.saveSession();
-            
+
             return true;
         } else {
             this.addOutput(`> Unknown character: ${characterName}`, 'error');
@@ -2511,12 +2511,12 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         if (this.charactersLoaded && this.matrixCharacters[character]) {
             return this.matrixCharacters[character].prompt;
         }
-        
+
         // Fallback: if character not found or not loaded, default to Oracle
         if (this.charactersLoaded && this.matrixCharacters['oracle']) {
             return this.matrixCharacters['oracle'].prompt;
         }
-        
+
         // Ultimate fallback: basic Oracle prompt if YAML files fail to load
         return `You are the Oracle from The Matrix movie series. Embody her character completely in your responses:
 
@@ -2563,17 +2563,17 @@ When giving information, be accurate but phrase it mysteriously or philosophical
     listMatrixCharacters() {
         this.addOutput('Available Matrix Characters:', 'info');
         this.addOutput('', 'success');
-        
+
         // Get character list
         const characters = Object.entries(this.matrixCharacters);
-        
+
         // Sort characters alphabetically for better display
         characters.sort((a, b) => a[0].localeCompare(b[0]));
-        
+
         // Display current character with an indicator
         for (const [key, character] of characters) {
             let displayLine = `${character.displayName.padEnd(15)} - ${character.name}`;
-            
+
             // Add indicator for current character
             if (key === this.selectedCharacter) {
                 displayLine += ' (current)';
@@ -2582,7 +2582,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
                 this.addOutput(displayLine, 'info');
             }
         }
-        
+
         this.addOutput('', 'success');
         this.addOutput('Usage: chat [character] [message]', 'warning');
         this.addOutput('Example: chat trinity Tell me about hacking', 'warning');
@@ -2602,43 +2602,43 @@ When giving information, be accurate but phrase it mysteriously or philosophical
             user-select: none;
             transition: opacity 0.2s ease;
         `;
-        
+
         copyLine.innerHTML = `📋 Copy ${characterName}'s response`;
-        
+
         // Add hover effect
         copyLine.addEventListener('mouseenter', () => {
             copyLine.style.opacity = '1';
             copyLine.style.color = '#00ff00';
         });
-        
+
         copyLine.addEventListener('mouseleave', () => {
             copyLine.style.opacity = '0.7';
             copyLine.style.color = '';
         });
-        
+
         // Add click handler to copy text
         copyLine.addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(text);
-                
+
                 // Provide visual feedback
                 const originalText = copyLine.innerHTML;
                 copyLine.innerHTML = '✅ Copied to clipboard!';
                 copyLine.style.color = '#00ff00';
-                
+
                 // Reset after 2 seconds
                 setTimeout(() => {
                     copyLine.innerHTML = originalText;
                     copyLine.style.color = '';
                 }, 2000);
-                
+
                 // Also show a system message
                 this.addOutput('> Response copied to clipboard', 'success');
-                
+
             } catch (err) {
                 // Fallback for browsers that don't support clipboard API
                 console.error('Clipboard API failed, trying fallback:', err);
-                
+
                 // Create a temporary textarea for fallback copy
                 const textArea = document.createElement('textarea');
                 textArea.value = text;
@@ -2646,59 +2646,59 @@ When giving information, be accurate but phrase it mysteriously or philosophical
                 textArea.style.opacity = '0';
                 textArea.style.left = '-9999px';
                 document.body.appendChild(textArea);
-                
+
                 try {
                     textArea.select();
                     document.execCommand('copy');
                     document.body.removeChild(textArea);
-                    
+
                     // Provide visual feedback for fallback
                     const originalText = copyLine.innerHTML;
                     copyLine.innerHTML = '✅ Copied to clipboard!';
                     copyLine.style.color = '#00ff00';
-                    
+
                     setTimeout(() => {
                         copyLine.innerHTML = originalText;
                         copyLine.style.color = '';
                     }, 2000);
-                    
+
                     this.addOutput('> Response copied to clipboard', 'success');
-                    
+
                 } catch (fallbackErr) {
                     console.error('Fallback copy failed:', fallbackErr);
-                    
+
                     // Show error message
                     copyLine.innerHTML = '❌ Copy failed - please select and copy manually';
                     copyLine.style.color = '#ff4444';
-                    
+
                     setTimeout(() => {
                         copyLine.innerHTML = originalText;
                         copyLine.style.color = '';
                     }, 3000);
-                    
+
                     this.addOutput('> Copy failed - browser security restrictions', 'error');
-                    
+
                     if (textArea.parentNode) {
                         document.body.removeChild(textArea);
                     }
                 }
             }
         });
-        
+
         this.terminalOutput.appendChild(copyLine);
         this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
     }
 
     async scanNetworkForOracle() {
         this.addOutput('> Localhost Oracle not found, scanning local network...', 'warning');
-        
+
         try {
             const foundServer = await this.findOllamaOnNetwork();
-            
+
             if (foundServer) {
                 this.oracleUrl = foundServer;
                 this.addOutput(`> Found Oracle at ${foundServer}`, 'success');
-                
+
                 // Try to connect to the found server
                 await this.connectToOracle();
             } else {
@@ -2723,10 +2723,10 @@ When giving information, be accurate but phrase it mysteriously or philosophical
 
         // Scan in batches to avoid overwhelming the network
         const batchSize = 20;
-        
+
         for (let i = 0; i < networkRanges.length; i += batchSize) {
             const batch = networkRanges.slice(i, i + batchSize);
-            
+
             const promises = batch.map(async (ip) => {
                 try {
                     const url = `http://${ip}:${port}`;
@@ -2751,7 +2751,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
             });
 
             const results = await Promise.allSettled(promises);
-            
+
             results.forEach((result) => {
                 if (result.status === 'fulfilled' && result.value) {
                     foundServers.push(result.value);
@@ -2773,7 +2773,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
 
     getLocalNetworkRanges() {
         const ranges = [];
-        
+
         // Common private network ranges
         const networkPrefixes = [
             '192.168.1.',   // Most common home router range
@@ -2791,7 +2791,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
             for (let i = 1; i < 255; i++) {
                 // Skip localhost (we already tried that)
                 if (prefix === '127.0.0.' && i === 1) continue;
-                
+
                 // Prioritize common router/server IPs
                 if (i <= 30 || (i >= 100 && i <= 130) || (i >= 200 && i <= 230)) {
                     ranges.push(`${prefix}${i}`);
@@ -2808,7 +2808,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         const lastUser = this.getLastUser();
         if (lastUser) {
             this.usernameInput.value = lastUser;
-            
+
             // Add helpful text about returning user
             const welcomeBack = document.createElement('div');
             welcomeBack.className = 'returning-user-message';
@@ -2824,11 +2824,11 @@ When giving information, be accurate but phrase it mysteriously or philosophical
             welcomeBack.textContent = `Welcome back, ${lastUser}`;
             this.loginForm.insertBefore(welcomeBack, this.loginForm.firstChild);
         }
-        
+
         // Show login form after messages have displayed
         setTimeout(() => {
             this.loginForm.style.display = 'block';
-            
+
             // Focus on password if username is pre-filled, otherwise username
             if (lastUser) {
                 this.passwordInput.focus();
@@ -2890,7 +2890,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         // Load existing session data for this user
         console.log(`[SESSION] Attempting to load session for user: ${username}`);
         const sessionData = this.loadSession(username);
-        
+
         if (sessionData) {
             console.log(`[SESSION] Found existing session for ${username}, last active: ${new Date(sessionData.lastActive).toLocaleString()}`);
         } else {
@@ -2900,17 +2900,17 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         // Store username and proceed to main terminal
         this.currentUser = username;
         this.isLoggedIn = true;
-        
+
         // IMPORTANT: Clear current session state before restoring new session
         this.terminalOutput.innerHTML = '';
         this.chatHistory = [];
         this.commandHistory = [];
-        
+
         // Restore session data if available
         if (sessionData) {
             this.restoreSessionData(sessionData);
         }
-        
+
         this.hideLoginScreen();
         this.showMainTerminal(sessionData);
     }
@@ -2948,7 +2948,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         this.usernameInput.disabled = !enabled;
         this.passwordInput.disabled = !enabled;
         this.loginButton.disabled = !enabled;
-        
+
         if (enabled) {
             this.loginButton.textContent = 'ACCESS MAINFRAME';
         } else {
@@ -2969,28 +2969,28 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         `;
 
         const authStatus = document.getElementById('auth-status');
-        
+
         // Simulate authentication steps
         await new Promise(resolve => setTimeout(resolve, 800));
         authStatus.textContent = 'Checking access permissions...';
-        
+
         await new Promise(resolve => setTimeout(resolve, 600));
         authStatus.textContent = 'Establishing secure session...';
-        
+
         await new Promise(resolve => setTimeout(resolve, 600));
         authStatus.textContent = 'Access granted!';
         authStatus.style.color = '#00ff00';
-        
+
         // Add access granted effect
         this.loginForm.parentElement.classList.add('access-granted');
-        
+
         await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     hideLoginScreen() {
         this.loginScreen.style.opacity = '0';
         this.loginScreen.style.transition = 'opacity 0.5s ease-out';
-        
+
         setTimeout(() => {
             this.loginScreen.style.display = 'none';
         }, 500);
@@ -3002,33 +3002,33 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         if (minimizeBtn) {
             minimizeBtn.style.display = 'flex';
         }
-        
+
         this.terminal.style.display = 'flex';
         this.terminal.style.opacity = '0';
         this.terminal.style.transition = 'opacity 0.5s ease-in';
-        
+
         setTimeout(() => {
             this.terminal.style.opacity = '1';
             this.updatePromptDisplay();
-            
+
             // IMPORTANT: Clear terminal history first for proper session isolation
             if (!sessionData) {
                 // New user - clear any existing terminal history
                 this.terminalOutput.innerHTML = '';
             }
-            
+
             if (sessionData) {
                 this.showWelcomeBack(sessionData);
             } else {
                 this.showWelcome();
             }
-            
+
             // Auto-connect to Oracle (will use restored URL if available)
             this.autoConnectToOracle();
-            
+
             // Save session after successful login
             this.saveSession();
-            
+
             this.terminalInput.focus();
         }, 100);
     }
@@ -3053,15 +3053,15 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         this.addOutput('Attempting Oracle reconnection...', 'warning');
         this.addOutput('Type "help" to see available commands.', 'info');
         this.addOutput('', 'success');
-        
+
         this.updatePromptDisplay();
     }
 
     // Session Management Methods
-    
+
     saveSession() {
         if (!this.currentUser) return;
-        
+
         const sessionData = {
             username: this.currentUser,
             selectedCharacter: this.selectedCharacter,
@@ -3078,7 +3078,7 @@ When giving information, be accurate but phrase it mysteriously or philosophical
             speed: this.speed,
             lastActive: Date.now()
         };
-        
+
         try {
             localStorage.setItem(`matrix_session_${this.currentUser}`, JSON.stringify(sessionData));
             console.log(`[SESSION] Saved session for user: ${this.currentUser}`);
@@ -3086,22 +3086,22 @@ When giving information, be accurate but phrase it mysteriously or philosophical
             console.error('[SESSION] Failed to save session:', error);
         }
     }
-    
+
     loadSession(username) {
         try {
             const sessionKey = `matrix_session_${username}`;
             const sessionData = localStorage.getItem(sessionKey);
-            
+
             if (sessionData) {
                 const data = JSON.parse(sessionData);
-                
+
                 // Check if session is not too old (30 days)
                 const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
                 if (Date.now() - data.lastActive > maxAge) {
                     localStorage.removeItem(sessionKey);
                     return null;
                 }
-                
+
                 console.log(`[SESSION] Loaded session for user: ${username}`);
                 return data;
             }
@@ -3110,10 +3110,10 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         }
         return null;
     }
-    
+
     restoreSessionData(sessionData) {
         if (!sessionData) return;
-        
+
         console.log(`[SESSION] Rest oring session for user: ${sessionData.username}`);
         console.log(`[SESSION] Session data contains:`, {
             selectedCharacter: sessionData.selectedCharacter,
@@ -3123,10 +3123,10 @@ When giving information, be accurate but phrase it mysteriously or philosophical
             commandHistoryLength: sessionData.commandHistory?.length || 0,
             hasTerminalHistory: !!sessionData.terminalHistory
         });
-        
+
         // IMPORTANT: Clear terminal first to ensure proper session isolation
         this.terminalOutput.innerHTML = '';
-        
+
         // Restore user preferences
         this.selectedCharacter = sessionData.selectedCharacter || 'oracle';
         this.oracleUrl = sessionData.oracleUrl || 'http://127.0.0.1:11434';
@@ -3137,42 +3137,42 @@ When giving information, be accurate but phrase it mysteriously or philosophical
         this.speechVolume = sessionData.speechVolume || 0.8;
         this.mode = sessionData.mode || 'matrix';
         this.speed = sessionData.speed || 1;
-        
+
         // Restore chat history if available
         this.chatHistory = sessionData.chatHistory || [];
-        
+
         // Restore command history if available
         this.commandHistory = sessionData.commandHistory || [];
-        
+
         // Restore terminal history if available (after clearing)
         if (sessionData.terminalHistory) {
             this.terminalOutput.innerHTML = sessionData.terminalHistory;
             this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
         }
-        
+
         // Reset connection state - session restoration doesn't maintain active connections
         this.oracleConnected = false;
         this.availableModels = [];
-        
+
         // Update character set based on mode
         this.allChars = this.mode === 'matrix' ? this.matrixChars : this.symbolChars;
-        
+
         // Update all drops with correct character set
         for (let drop of this.drops) {
             for (let j = 0; j < drop.chars.length; j++) {
                 drop.chars[j].char = this.getRandomChar();
             }
         }
-        
+
         console.log(`[SESSION] Restored session data - Character: ${this.selectedCharacter}, Mode: ${this.mode}, Oracle: ${this.oracleUrl}`);
     }
-    
+
     getLastUser() {
         try {
             // Find all matrix sessions and get the most recently active one
             let lastUser = null;
             let lastActive = 0;
-            
+
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key && key.startsWith('matrix_session_')) {
@@ -3187,14 +3187,14 @@ When giving information, be accurate but phrase it mysteriously or philosophical
                     }
                 }
             }
-            
+
             return lastUser;
         } catch (error) {
             console.error('[SESSION] Failed to get last user:', error);
             return null;
         }
     }
-    
+
     clearSession(username) {
         try {
             const sessionKey = `matrix_session_${username || this.currentUser}`;
