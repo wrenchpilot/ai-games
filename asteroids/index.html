@@ -33,7 +33,95 @@
         <label for="timer">Time: </label>
         <span id="timer">3:00</span>
     </div>
+    <div class="credits-icon" id="creditsIcon">ⓘ</div>
+    
+    <!-- Credits Modal -->
+    <div class="credits-modal" id="creditsModal">
+        <div class="modal-content">
+            <span class="close-button" id="closeCredits">&times;</span>
+            <h3>Credits</h3>
+            <p>Sprites:</p>
+            <ul>
+                <li>Asteroids: <a href="https://www.nicepng.com/ourpic/u2q8o0o0a9i1i1i1_asteroid-clipart-round-boulder-asteroid-sprite-8-bit/" target="_blank">NicePNG</a></li>
+                <li><a href="https://www.flaticon.com/free-icons/space-shuttle" title="space shuttle icons" target="_blank">Space shuttle icons created by juicy_fish - Flaticon</a></li>
+            </ul>
+            <p>Development Tools:</p>
+            <ul>
+                <li>VS Code</li>
+                <li>GitHub Copilot Chat</li>
+                <li>Anthropic Claude (Sonnet 3.5, 3.7, and 4)</li>
+                <li>Copilot Agent MCP</li>
+                <li>Playwright MCP</li>
+            </ul>
+        </div>
+    </div>
+    
     <script src="scripts/script.js"></script>
+    <script>
+        // Credits modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const creditsIcon = document.getElementById('creditsIcon');
+            const creditsModal = document.getElementById('creditsModal');
+            const closeCredits = document.getElementById('closeCredits');
+            const gameCanvas = document.getElementById('gameCanvas');
+            
+            // Open modal when clicking on the icon
+            creditsIcon.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default behavior
+                e.stopPropagation(); // Prevent event from reaching canvas
+                
+                // Prevent the game from activating
+                if (window.game && typeof window.game.pause === 'function') {
+                    window.game.pause();
+                }
+                
+                creditsModal.style.display = 'flex';
+                return false; // Prevent any default actions
+            });
+            
+            // Close modal when clicking on X
+            closeCredits.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                creditsModal.style.display = 'none';
+                return false;
+            });
+            
+            // Close modal when clicking outside of it
+            window.addEventListener('click', function(event) {
+                if (event.target === creditsModal) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    creditsModal.style.display = 'none';
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && creditsModal.style.display === 'flex') {
+                    event.preventDefault(); // Prevent default escape behavior
+                    event.stopPropagation(); // Stop event from reaching the game
+                    creditsModal.style.display = 'none';
+                }
+            });
+            
+            // Prevent the credits icon from taking focus that would affect the game
+            creditsIcon.addEventListener('mousedown', function(e) {
+                e.preventDefault(); // Prevent default focus behavior
+                return false;
+            });
+            
+            // Make sure clicks on the modal don't affect the game
+            creditsModal.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Make sure the modal content clicks don't reach the game
+            document.querySelector('.modal-content').addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    </script>
 </body>
 
 </html>

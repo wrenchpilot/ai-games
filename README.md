@@ -16,6 +16,11 @@ Classic space shooter featuring:
 - **Special Effects**: Parallax starfield, comets with particle trails
 - **Audio**: Web Audio API generated sound effects
 
+**Sprite Credits:**
+
+- Asteroids: [NicePNG](https://www.nicepng.com/ourpic/u2q8o0o0a9i1i1i1_asteroid-clipart-round-boulder-asteroid-sprite-8-bit/)
+- Space Shuttle: [Space shuttle icons created by juicy_fish - Flaticon](https://www.flaticon.com/free-icons/space-shuttle)
+
 ### 🐦 Flappy Bird
 
 Retro-styled obstacle avoidance game with:
@@ -319,6 +324,12 @@ This project is open source and available under the [MIT License](LICENSE).
 - **Implementation**: Built with modern web technologies
 - **Fonts**: "Press Start 2P" by CodeMan38
 - **Inspiration**: 1980s arcade culture and retro gaming
+- **Development Tools**:
+  - VS Code
+  - GitHub Copilot Chat
+  - Anthropic Claude (Sonnet 3.5, 3.7, and 4)
+  - Copilot Agent MCP
+  - Playwright MCP
 
 ## 🌟 Features Showcase
 
