@@ -691,7 +691,7 @@ class MatrixRain {
         const currentWord = words[words.length - 1];
 
         // Define available commands and their context-aware completions
-        const commands = ['help', 'ls', 'speed', 'toggle', 'mode', 'fullscreen', 'fs', 'clear', 'matrix', 'neo', 'voice', 'tts', 'say', 'oracle', 'chat', 'ask', 'characters', 'chars', 'logout', 'exit'];
+        const commands = ['help', 'ls', 'speed', 'toggle', 'mode', 'fullscreen', 'fs', 'clear', 'matrix', 'neo', 'voice', 'tts', 'say', 'oracle', 'chat', 'ask', 'characters', 'chars', 'home', 'logout', 'exit'];
         const voiceSubCommands = ['on', 'off', 'test', 'status', 'voices', 'rate', 'pitch', 'volume', 'select', 'help'];
         const oracleSubCommands = ['connect', 'disconnect', 'status', 'models', 'select', 'help'];
 
@@ -824,6 +824,7 @@ class MatrixRain {
         this.addOutput('  chat [char] [text] - Chat with Matrix characters', 'info');
         this.addOutput('                  Try: chat morpheus What is the Matrix?', 'info');
         this.addOutput('  ask [text]    - Same as chat command', 'info');
+        this.addOutput('  home          - Navigate to main games index page', 'info');
         this.addOutput('  session       - Show current session information and debugging', 'info');
         this.addOutput('  logout        - Save session and return to login screen', 'info');
         this.addOutput('  exit          - Attempt to exit (spoiler: you can\'t)', 'info');
@@ -908,6 +909,9 @@ class MatrixRain {
             case 'ask':
                 await this.handleChatCommand(args.slice(1));
                 break;
+            case 'home':
+                this.navigateHome();
+                break;
             case 'exit':
                 this.exitMatrix();
                 break;
@@ -952,6 +956,7 @@ class MatrixRain {
         this.addOutput('characters    - List available Matrix characters', 'info');
         this.addOutput('chat [char] [text] - Chat with Matrix characters', 'info');
         this.addOutput('ask [text]    - Same as chat command', 'info');
+        this.addOutput('home          - Navigate to main games index page', 'info');
         this.addOutput('session       - Show current session information and debugging', 'info');
         this.addOutput('logout        - Save session and return to login screen', 'info');
         this.addOutput('exit          - Attempt to exit (spoiler: you can\'t)', 'info');
@@ -974,6 +979,7 @@ class MatrixRain {
             'fs           - Toggle fullscreen mode (shortcut)',
             'fullscreen   - Toggle fullscreen mode',
             'help         - Show detailed help message',
+            'home         - Navigate to main games index page',
             'logout       - Save session and return to login screen',
             'ls           - List all available commands (this command)',
             'matrix       - Display random Matrix quotes (with speech)',
@@ -1268,6 +1274,35 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             this.addOutput('  No sessions found', 'info');
         }
         this.addOutput('', 'success');
+    }
+
+    navigateHome() {
+        this.addOutput('', 'success');
+        this.addOutput('Initiating navigation to main games index...', 'warning');
+        
+        if (this.speechEnabled) {
+            this.speak('Navigating to main games index...', { rate: 0.8, pitch: 0.8 });
+        }
+
+        const timeoutId = setTimeout(() => {
+            if (!this.isOperationCancelled) {
+                this.addOutput('Exiting the Matrix...', 'info');
+                this.addOutput('Reality protocols activated', 'success');
+                
+                if (this.speechEnabled) {
+                    this.speak('Welcome back to reality', { rate: 0.7, pitch: 1.0 });
+                }
+                
+                // Save session before navigation
+                this.saveSession();
+                
+                // Navigate to the main games index
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
+            }
+        }, 1500);
+        this.activeTimeouts.push(timeoutId);
     }
 
     logout() {
