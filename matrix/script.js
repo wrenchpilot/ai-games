@@ -691,9 +691,10 @@ class MatrixRain {
         const currentWord = words[words.length - 1];
 
         // Define available commands and their context-aware completions
-        const commands = ['help', 'ls', 'speed', 'toggle', 'mode', 'fullscreen', 'fs', 'clear', 'matrix', 'neo', 'voice', 'tts', 'say', 'oracle', 'chat', 'ask', 'characters', 'chars', 'home', 'logout', 'exit'];
+        const commands = ['help', 'ls', 'speed', 'toggle', 'mode', 'fullscreen', 'fs', 'clear', 'matrix', 'neo', 'voice', 'tts', 'say', 'oracle', 'chat', 'ask', 'characters', 'chars', 'home', 'session', 'logout', 'exit'];
         const voiceSubCommands = ['on', 'off', 'test', 'status', 'voices', 'rate', 'pitch', 'volume', 'select', 'help'];
         const oracleSubCommands = ['connect', 'disconnect', 'status', 'models', 'select', 'help'];
+        const characterSubCommands = Object.keys(this.matrixCharacters);
 
         let matches = [];
 
@@ -713,7 +714,7 @@ class MatrixRain {
                 matches = ['0.5', '0.8', '1.0', '1.5', '2.0'].filter(rate => rate.startsWith(currentWord));
             } else if (mainCommand === 'chat' || mainCommand === 'ask') {
                 // Offer character completions for chat/ask command
-                matches = Object.keys(this.matrixCharacters).filter(char => 
+                matches = characterSubCommands.filter(char => 
                     char.startsWith(currentWord.toLowerCase()));
             }
         } else if (words.length === 3) {
@@ -806,28 +807,11 @@ class MatrixRain {
         this.addOutput('', 'success');
         this.addOutput(`Access granted for user: ${this.currentUser}`, 'info');
         this.addOutput('', 'success');
-        this.addOutput('Available commands:', 'info');
-        this.addOutput('  help          - Show detailed help message', 'info');
-        this.addOutput('  ls            - List all available commands (filesystem style)', 'info');
-        this.addOutput('  speed [1-5]   - Set rain speed (1=slowest, 5=fastest)', 'info');
-        this.addOutput('  toggle        - Toggle matrix rain effect', 'info');
-        this.addOutput('  mode          - Toggle between matrix and cyberpunk symbols', 'info');
-        this.addOutput('  fullscreen    - Toggle fullscreen mode (or use CTRL+SHIFT+F)', 'info');
-        this.addOutput('  clear         - Clear terminal output', 'info');
-        this.addOutput('  matrix        - Display random Matrix quotes (with speech)', 'info');
-        this.addOutput('  neo           - Special Neo sequence (with speech)', 'info');
-        this.addOutput('  voice         - Control text-to-speech (on/off/settings)', 'info');
-        this.addOutput('                  Try: voice voices, voice select [number]', 'info');
-        this.addOutput('  say [text]    - Make TTS speak any text you want', 'info');
-        this.addOutput('  oracle        - Connect to the Oracle (oracle help for options)', 'info');
-        this.addOutput('  characters    - List available Matrix characters', 'info');
-        this.addOutput('  chat [char] [text] - Chat with Matrix characters', 'info');
-        this.addOutput('                  Try: chat morpheus What is the Matrix?', 'info');
-        this.addOutput('  ask [text]    - Same as chat command', 'info');
-        this.addOutput('  home          - Navigate to main games index page', 'info');
-        this.addOutput('  session       - Show current session information and debugging', 'info');
-        this.addOutput('  logout        - Save session and return to login screen', 'info');
-        this.addOutput('  exit          - Attempt to exit (spoiler: you can\'t)', 'info');
+        this.addOutput('Getting started:', 'info');
+        this.addOutput('  Type "help" to see all available commands and options', 'info');
+        this.addOutput('  Type "ls" for a quick command list', 'info');
+        this.addOutput('  Try "matrix" or "neo" for some Matrix magic', 'info');
+        this.addOutput('  Use "chat morpheus What is the Matrix?" to talk with characters', 'info');
         this.addOutput('', 'success');
         this.addOutput('Keyboard shortcuts:', 'warning');
         this.addOutput('  ESC           - Toggle matrix rain', 'warning');
@@ -969,39 +953,31 @@ class MatrixRain {
         this.addOutput('Available commands:', 'info');
         this.addOutput('', 'success');
 
-        // Define all available commands with descriptions
+        // Simple list of command names only (like Unix ls)
         const commands = [
-            'ask          - Same as chat command',
-            'chat         - Chat with Matrix characters',
-            'characters   - List available Matrix characters',
-            'clear        - Clear terminal output',
-            'exit         - Attempt to exit (spoiler: you can\'t)',
-            'fs           - Toggle fullscreen mode (shortcut)',
-            'fullscreen   - Toggle fullscreen mode',
-            'help         - Show detailed help message',
-            'home         - Navigate to main games index page',
-            'logout       - Save session and return to login screen',
-            'ls           - List all available commands (this command)',
-            'matrix       - Display random Matrix quotes (with speech)',
-            'mode         - Toggle between matrix and cyberpunk symbols',
-            'neo          - Special Neo sequence (with speech)',
-            'oracle       - Connect to the Oracle (oracle help for options)',
-            'say          - Make TTS speak any text you want',
-            'session      - Show current session information and debugging',
-            'speed        - Set rain speed (1=slowest, 5=fastest)',
-            'toggle       - Toggle matrix rain effect',
-            'tts          - Control text-to-speech (alias for voice)',
-            'voice        - Control text-to-speech (on/off/settings)'
+            'ask', 'chat', 'characters', 'clear', 'exit', 'fs', 'fullscreen', 
+            'help', 'home', 'logout', 'ls', 'matrix', 'mode', 'neo', 'oracle', 
+            'say', 'session', 'speed', 'toggle', 'tts', 'voice'
         ];
 
-        // Display commands in a clean format
-        commands.forEach(cmd => {
-            this.addOutput(`  ${cmd}`, 'info');
+        // Display commands in columns for compact view
+        let output = '  ';
+        commands.forEach((cmd, index) => {
+            output += cmd.padEnd(12);
+            if ((index + 1) % 6 === 0) { // 6 commands per line
+                this.addOutput(output, 'info');
+                output = '  ';
+            }
         });
+        
+        // Display remaining commands if any
+        if (output.trim().length > 0) {
+            this.addOutput(output, 'info');
+        }
 
         this.addOutput('', 'success');
-        this.addOutput('Use "help" for detailed information and usage examples', 'warning');
-        this.addOutput('Use TAB for auto-completion of commands and options', 'warning');
+        this.addOutput('Use "help" for detailed descriptions and usage examples', 'warning');
+        this.addOutput('Use TAB for auto-completion of commands', 'warning');
     }
 
     changeSpeed(newSpeed) {
