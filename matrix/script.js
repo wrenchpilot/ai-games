@@ -374,6 +374,9 @@ class MatrixRain {
         } else {
             this.addOutput('Back to the Matrix...', 'success');
         }
+
+        // Save session after mode change
+        this.saveSession();
     }
 
     createMinimizeButton() {
@@ -549,6 +552,8 @@ class MatrixRain {
     clearTerminal() {
         this.terminalOutput.innerHTML = '';
         this.addOutput('Terminal cleared', 'info');
+        // Save session after clearing terminal to update stored history
+        this.saveSession();
     }
 
     hideCommandPrompt() {
@@ -686,7 +691,7 @@ class MatrixRain {
         const currentWord = words[words.length - 1];
 
         // Define available commands and their context-aware completions
-        const commands = ['help', 'ls', 'speed', 'toggle', 'mode', 'fullscreen', 'fs', 'clear', 'matrix', 'neo', 'voice', 'tts', 'say', 'oracle', 'chat', 'ask', 'characters', 'chars', 'exit'];
+        const commands = ['help', 'ls', 'speed', 'toggle', 'mode', 'fullscreen', 'fs', 'clear', 'matrix', 'neo', 'voice', 'tts', 'say', 'oracle', 'chat', 'ask', 'characters', 'chars', 'logout', 'exit'];
         const voiceSubCommands = ['on', 'off', 'test', 'status', 'voices', 'rate', 'pitch', 'volume', 'select', 'help'];
         const oracleSubCommands = ['connect', 'disconnect', 'status', 'models', 'select', 'help'];
 
@@ -802,16 +807,16 @@ class MatrixRain {
         this.addOutput(`Access granted for user: ${this.currentUser}`, 'info');
         this.addOutput('', 'success');
         this.addOutput('Available commands:', 'info');
-        this.addOutput('  help          - Show available commands', 'info');
-        this.addOutput('  ls            - List all commands (filesystem style)', 'info');
-        this.addOutput('  speed [1-5]   - Adjust rain speed (1=slow, 5=fast)', 'info');
-        this.addOutput('  toggle        - Toggle matrix rain on/off', 'info');
+        this.addOutput('  help          - Show detailed help message', 'info');
+        this.addOutput('  ls            - List all available commands (filesystem style)', 'info');
+        this.addOutput('  speed [1-5]   - Set rain speed (1=slowest, 5=fastest)', 'info');
+        this.addOutput('  toggle        - Toggle matrix rain effect', 'info');
         this.addOutput('  mode          - Toggle between matrix and cyberpunk symbols', 'info');
         this.addOutput('  fullscreen    - Toggle fullscreen mode (or use CTRL+SHIFT+F)', 'info');
         this.addOutput('  clear         - Clear terminal output', 'info');
-        this.addOutput('  matrix        - Display matrix quotes (with speech)', 'info');
-        this.addOutput('  neo           - Wake up, Neo... (with speech)', 'info');
-        this.addOutput('  voice         - Control text-to-speech settings', 'info');
+        this.addOutput('  matrix        - Display random Matrix quotes (with speech)', 'info');
+        this.addOutput('  neo           - Special Neo sequence (with speech)', 'info');
+        this.addOutput('  voice         - Control text-to-speech (on/off/settings)', 'info');
         this.addOutput('                  Try: voice voices, voice select [number]', 'info');
         this.addOutput('  say [text]    - Make TTS speak any text you want', 'info');
         this.addOutput('  oracle        - Connect to the Oracle (oracle help for options)', 'info');
@@ -819,7 +824,9 @@ class MatrixRain {
         this.addOutput('  chat [char] [text] - Chat with Matrix characters', 'info');
         this.addOutput('                  Try: chat morpheus What is the Matrix?', 'info');
         this.addOutput('  ask [text]    - Same as chat command', 'info');
-        this.addOutput('  exit          - Exit the Matrix (just kidding)', 'info');
+        this.addOutput('  session       - Show current session information and debugging', 'info');
+        this.addOutput('  logout        - Save session and return to login screen', 'info');
+        this.addOutput('  exit          - Attempt to exit (spoiler: you can\'t)', 'info');
         this.addOutput('', 'success');
         this.addOutput('Keyboard shortcuts:', 'warning');
         this.addOutput('  ESC           - Toggle matrix rain', 'warning');
@@ -904,6 +911,12 @@ class MatrixRain {
             case 'exit':
                 this.exitMatrix();
                 break;
+            case 'logout':
+                this.logout();
+                break;
+            case 'session':
+                this.showSessionInfo();
+                break;
             case '':
                 // Empty command, do nothing
                 break;
@@ -916,6 +929,9 @@ class MatrixRain {
         if (!this.isProcessing && !this.isAnimating) {
             this.terminalInput.value = '';
         }
+        
+        // Save session after command execution to preserve terminal history
+        this.saveSession();
     }
 
     showHelp() {
@@ -936,10 +952,12 @@ class MatrixRain {
         this.addOutput('characters    - List available Matrix characters', 'info');
         this.addOutput('chat [char] [text] - Chat with Matrix characters', 'info');
         this.addOutput('ask [text]    - Same as chat command', 'info');
+        this.addOutput('session       - Show current session information and debugging', 'info');
+        this.addOutput('logout        - Save session and return to login screen', 'info');
+        this.addOutput('exit          - Attempt to exit (spoiler: you can\'t)', 'info');
         this.addOutput('', 'success');
         this.addOutput('Note: TTS automatically skips code and character actions', 'warning');
         this.addOutput('Use CTRL+C to interrupt any operation or speech', 'warning');
-        this.addOutput('exit          - Attempt to exit (spoiler: you can\'t)', 'info');
     }
 
     listCommands() {
@@ -948,24 +966,26 @@ class MatrixRain {
 
         // Define all available commands with descriptions
         const commands = [
-            'ask          - Chat with the Oracle',
-            'chat         - Send message to the Oracle',
+            'ask          - Same as chat command',
+            'chat         - Chat with Matrix characters',
+            'characters   - List available Matrix characters',
             'clear        - Clear terminal output',
             'exit         - Attempt to exit (spoiler: you can\'t)',
             'fs           - Toggle fullscreen mode (shortcut)',
             'fullscreen   - Toggle fullscreen mode',
             'help         - Show detailed help message',
+            'logout       - Save session and return to login screen',
             'ls           - List all available commands (this command)',
             'matrix       - Display random Matrix quotes (with speech)',
             'mode         - Toggle between matrix and cyberpunk symbols',
             'neo          - Special Neo sequence (with speech)',
             'oracle       - Connect to the Oracle (oracle help for options)',
             'say          - Make TTS speak any text you want',
+            'session      - Show current session information and debugging',
             'speed        - Set rain speed (1=slowest, 5=fastest)',
             'toggle       - Toggle matrix rain effect',
             'tts          - Control text-to-speech (alias for voice)',
-            'voice        - Control text-to-speech (on/off/settings)',
-            'characters   - List available Matrix characters'
+            'voice        - Control text-to-speech (on/off/settings)'
         ];
 
         // Display commands in a clean format
@@ -987,6 +1007,9 @@ class MatrixRain {
             for (let drop of this.drops) {
                 drop.speed = Math.random() * this.speed + 0.5;
             }
+            
+            // Save session after speed change
+            this.saveSession();
         } else {
             this.addOutput('Speed must be between 1 and 5', 'error');
         }
@@ -1201,6 +1224,124 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         this.activeTimeouts.push(timeoutId3);
     }
 
+    showSessionInfo() {
+        this.addOutput('', 'success');
+        this.addOutput('='.repeat(50), 'success');
+        this.addOutput('CURRENT SESSION INFORMATION', 'success');
+        this.addOutput('='.repeat(50), 'success');
+        this.addOutput('', 'success');
+        this.addOutput(`Current User: ${this.currentUser}`, 'info');
+        this.addOutput(`Session Key: matrix_session_${this.currentUser}`, 'info');
+        this.addOutput(`Login Status: ${this.isLoggedIn ? 'Logged In' : 'Not Logged In'}`, 'info');
+        this.addOutput('', 'success');
+        this.addOutput('Settings:', 'warning');
+        this.addOutput(`  Character: ${this.selectedCharacter}`, 'info');
+        this.addOutput(`  Oracle URL: ${this.oracleUrl}`, 'info');
+        this.addOutput(`  Selected Model: ${this.selectedModel || 'None'}`, 'info');
+        this.addOutput(`  Mode: ${this.mode}`, 'info');
+        this.addOutput(`  Speed: ${this.speed}`, 'info');
+        this.addOutput('', 'success');
+        this.addOutput('History:', 'warning');
+        this.addOutput(`  Chat Messages: ${this.chatHistory.length}`, 'info');
+        this.addOutput(`  Commands: ${this.commandHistory.length}`, 'info');
+        this.addOutput('', 'success');
+        
+        // Show which sessions exist in localStorage
+        this.addOutput('Available Sessions:', 'warning');
+        let sessionCount = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('matrix_session_')) {
+                const username = key.replace('matrix_session_', '');
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    const lastActive = new Date(data.lastActive).toLocaleString();
+                    const isCurrent = username === this.currentUser ? ' (CURRENT)' : '';
+                    this.addOutput(`  ${username}: Last active ${lastActive}${isCurrent}`, 'info');
+                    sessionCount++;
+                } catch (error) {
+                    this.addOutput(`  ${username}: [Invalid session data]`, 'error');
+                }
+            }
+        }
+        if (sessionCount === 0) {
+            this.addOutput('  No sessions found', 'info');
+        }
+        this.addOutput('', 'success');
+    }
+
+    logout() {
+        // Save current session before logout
+        this.saveSession();
+        
+        this.addOutput('', 'success');
+        this.addOutput('Logging out...', 'warning');
+        this.addOutput('Session saved successfully', 'info');
+        this.addOutput('Returning to login screen...', 'info');
+        
+        // Reset login state
+        this.isLoggedIn = false;
+        this.currentUser = null;
+        
+        // Hide terminal and show login screen
+        this.terminal.style.display = 'none';
+        
+        // Hide minimize button (only shown when logged in)
+        const minimizeBtn = document.getElementById('minimize-btn');
+        if (minimizeBtn) {
+            minimizeBtn.style.display = 'none';
+        }
+        
+        // Reset and show login screen
+        this.loginScreen.style.display = 'flex';
+        this.loginScreen.style.opacity = '1';
+        this.loginScreen.style.transition = 'opacity 0.5s ease-in';
+        
+        // Remove access granted effect if it exists
+        this.loginForm.parentElement.classList.remove('access-granted');
+        
+        // Reset login form to original HTML structure (overwrite authentication progress)
+        this.loginForm.innerHTML = `
+            <div class="form-group">
+                <label for="username-input">Username:</label>
+                <input type="text" id="username-input" autocomplete="off" spellcheck="false" maxlength="16">
+            </div>
+            <div class="form-group">
+                <label for="password-input">Password:</label>
+                <input type="password" id="password-input" autocomplete="off" spellcheck="false" maxlength="32">
+            </div>
+            <div class="login-button-container">
+                <button id="login-button" class="login-button">ACCESS MAINFRAME</button>
+            </div>
+            <div class="login-hint">
+                Enter any username and password to access the system
+            </div>
+        `;
+        
+        // Re-get references to the new elements
+        this.usernameInput = document.getElementById('username-input');
+        this.passwordInput = document.getElementById('password-input');
+        this.loginButton = document.getElementById('login-button');
+        
+        // Reset login form properties
+        this.usernameInput.value = '';
+        this.passwordInput.value = '';
+        this.usernameInput.disabled = false;
+        this.passwordInput.disabled = false;
+        this.loginButton.disabled = false;
+        
+        // Show the login form immediately (don't wait for animation)
+        this.loginForm.style.display = 'block';
+        
+        // Re-setup event listeners for the new elements
+        this.setupLoginEventListeners();
+        
+        // Focus on username input
+        setTimeout(() => {
+            this.usernameInput.focus();
+        }, 100);
+    }
+
     handleSayCommand(args) {
         if (args.length === 0) {
             this.addOutput('Usage: say [text to speak]', 'warning');
@@ -1251,12 +1392,16 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 this.speechEnabled = true;
                 this.addOutput('Text-to-speech enabled', 'success');
                 this.speak('Text to speech enabled');
+                // Save session after speech setting change
+                this.saveSession();
                 break;
 
             case 'off':
                 this.speechEnabled = false;
                 this.speechSynthesis.cancel(); // Stop any ongoing speech
                 this.addOutput('Text-to-speech disabled', 'warning');
+                // Save session after speech setting change
+                this.saveSession();
                 break;
 
             case 'test':
@@ -1382,6 +1527,9 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         if (this.speechEnabled) {
             this.speak('Voice selection updated', { voice: this.selectedVoice });
         }
+        
+        // Save session after voice selection change
+        this.saveSession();
     }
 
     setVoiceRate(value) {
@@ -1395,6 +1543,8 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         if (this.speechEnabled) {
             this.speak('Rate updated', { rate: rate });
         }
+        // Save session after voice setting change
+        this.saveSession();
     }
 
     setVoicePitch(value) {
@@ -1408,6 +1558,8 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         if (this.speechEnabled) {
             this.speak('Pitch updated', { pitch: pitch });
         }
+        // Save session after voice setting change
+        this.saveSession();
     }
 
     setVoiceVolume(value) {
@@ -1421,6 +1573,8 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         if (this.speechEnabled) {
             this.speak('Volume updated', { volume: volume });
         }
+        // Save session after voice setting change
+        this.saveSession();
     }
 
     loadVoices() {
@@ -1906,6 +2060,9 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                 if (this.speechEnabled) {
                     this.speak('Oracle connection established');
                 }
+
+                // Save session after Oracle connection
+                this.saveSession();
             } else {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
@@ -1923,12 +2080,16 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         this.oracleConnected = false;
         this.availableModels = [];
         this.selectedModel = null;
-        this.chatHistory = [];
+        // Don't clear chat history on disconnect - preserve it for session restoration
+        // this.chatHistory = [];
         this.addOutput('> Disconnected from the Oracle', 'warning');
 
         if (this.speechEnabled) {
             this.speak('Oracle disconnected');
         }
+
+        // Save session after Oracle disconnection
+        this.saveSession();
     }
 
     showOracleStatus() {
@@ -1995,6 +2156,9 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             if (this.speechEnabled) {
                 this.speak(`Model ${model.name} selected`);
             }
+
+            // Save session after model selection
+            this.saveSession();
         } else {
             this.addOutput(`> Model "${modelName}" not found`, 'error');
             this.addOutput('> Use "oracle models" to see available models', 'info');
@@ -2142,6 +2306,8 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             // Clear the input and show prompt now that processing is complete
             this.terminalInput.value = '';
             this.showCommandPrompt();
+            // Save session after chat completion to preserve conversation
+            this.saveSession();
         }
     }
 
@@ -2175,8 +2341,11 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
     async autoConnectToOracle() {
         // Wait a moment for the welcome message to complete
         setTimeout(async () => {
+            // Add a message about attempting Oracle reconnection
+            this.addOutput('> Attempting to reconnect to Oracle...', 'info');
+            
             try {
-                // Silently attempt to connect to the default Oracle host
+                // Attempt to connect to the Oracle host (either default or restored from session)
                 const response = await fetch(`${this.oracleUrl}/api/tags`, {
                     method: 'GET',
                     headers: {
@@ -2191,35 +2360,70 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                     this.oracleConnected = true;
                     this.availableModels = data.models || [];
 
-                    // Show subtle connection success message
-                    this.addOutput('', 'success');
-                    this.addOutput('> Oracle auto-connected successfully!', 'success');
+                    // Show connection success message
+                    this.addOutput(`> Oracle reconnected successfully to ${this.oracleUrl}!`, 'success');
 
                     if (this.availableModels.length > 0) {
                         this.addOutput(`> Found ${this.availableModels.length} models available`, 'info');
 
-                        // Auto-select a default model using smart priority
-                        const defaultModel = this.selectDefaultModel();
-                        if (defaultModel) {
-                            this.selectedModel = defaultModel.name;
-                            this.addOutput(`> Auto-selected model: ${this.selectedModel}`, 'success');
-                            this.addOutput('> You can now use "chat" or "ask" commands!', 'info');
-                            this.addOutput('> Use "oracle models" to see all available models', 'info');
+                        // If we had a previously selected model, try to restore it
+                        if (this.selectedModel) {
+                            const modelExists = this.availableModels.find(m => m.name === this.selectedModel);
+                            if (modelExists) {
+                                this.addOutput(`> Restored model selection: ${this.selectedModel}`, 'success');
+                                if (this.chatHistory && this.chatHistory.length > 0) {
+                                    this.addOutput(`> Restored ${this.chatHistory.length} previous chat messages`, 'success');
+                                }
+                                this.addOutput('> You can now use "chat" or "ask" commands!', 'info');
+                            } else {
+                                this.addOutput(`> Previous model "${this.selectedModel}" no longer available`, 'warning');
+                                this.selectedModel = null;
+                                // Auto-select a default model using smart priority
+                                const defaultModel = this.selectDefaultModel();
+                                if (defaultModel) {
+                                    this.selectedModel = defaultModel.name;
+                                    this.addOutput(`> Auto-selected model: ${this.selectedModel}`, 'success');
+                                    if (this.chatHistory && this.chatHistory.length > 0) {
+                                        this.addOutput(`> Restored ${this.chatHistory.length} previous chat messages`, 'success');
+                                    }
+                                    this.addOutput('> You can now use "chat" or "ask" commands!', 'info');
+                                } else {
+                                    this.addOutput('> Use "oracle models" to see available models', 'info');
+                                    this.addOutput('> Use "oracle select [model]" to choose one', 'info');
+                                }
+                            }
                         } else {
-                            this.addOutput('> Use "oracle models" to see them, "oracle select [model]" to choose one', 'info');
+                            // Auto-select a default model using smart priority
+                            const defaultModel = this.selectDefaultModel();
+                            if (defaultModel) {
+                                this.selectedModel = defaultModel.name;
+                                this.addOutput(`> Auto-selected model: ${this.selectedModel}`, 'success');
+                                if (this.chatHistory && this.chatHistory.length > 0) {
+                                    this.addOutput(`> Restored ${this.chatHistory.length} previous chat messages`, 'success');
+                                }
+                                this.addOutput('> You can now use "chat" or "ask" commands!', 'info');
+                            } else {
+                                this.addOutput('> Use "oracle models" to see available models', 'info');
+                                this.addOutput('> Use "oracle select [model]" to choose one', 'info');
+                            }
                         }
+                        this.addOutput('> Use "oracle models" to see all available models', 'info');
                     } else {
-                        this.addOutput('> No models found. Install models with "oracle pull [model]"', 'warning');
+                        this.addOutput('> No models found. Install models with "ollama pull [model]"', 'warning');
                     }
                     this.addOutput('', 'success');
+                    
+                    // Save session after successful Oracle reconnection
+                    this.saveSession();
                 }
                 // If connection fails, fail silently - user can manually connect if needed
 
             } catch (error) {
-                // If localhost fails, scan the local network for Ollama servers
+                // If connection to saved/default URL fails, scan the local network for Ollama servers
+                this.addOutput(`> Failed to connect to ${this.oracleUrl}`, 'warning');
                 await this.scanNetworkForOracle();
             }
-        }, 2000); // Wait 2 seconds after welcome message
+        }, 3000); // Wait 3 seconds after welcome message (increased from 2 seconds)
     }
 
     selectDefaultModel() {
@@ -2295,6 +2499,9 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
                     volume: character.speechVolume
                 });
             }
+            
+            // Save session after character selection
+            this.saveSession();
             
             return true;
         } else {
@@ -3031,10 +3238,37 @@ When giving information, be accurate but present it with Mouse's characteristic 
 
     // Login Screen Methods
     setupLoginScreen() {
+        // Check for existing session and auto-populate username
+        const lastUser = this.getLastUser();
+        if (lastUser) {
+            this.usernameInput.value = lastUser;
+            
+            // Add helpful text about returning user
+            const welcomeBack = document.createElement('div');
+            welcomeBack.className = 'returning-user-message';
+            welcomeBack.style.cssText = `
+                color: #00ff00;
+                text-shadow: 0 0 5px #00ff00;
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 12px;
+                text-align: center;
+                margin-bottom: 10px;
+                opacity: 0.8;
+            `;
+            welcomeBack.textContent = `Welcome back, ${lastUser}`;
+            this.loginForm.insertBefore(welcomeBack, this.loginForm.firstChild);
+        }
+        
         // Show login form after messages have displayed
         setTimeout(() => {
             this.loginForm.style.display = 'block';
-            this.usernameInput.focus();
+            
+            // Focus on password if username is pre-filled, otherwise username
+            if (lastUser) {
+                this.passwordInput.focus();
+            } else {
+                this.usernameInput.focus();
+            }
         }, 4500); // Wait for messages to finish
 
         // Setup login form event listeners
@@ -3087,11 +3321,32 @@ When giving information, be accurate but present it with Mouse's characteristic 
         // Show authentication progress
         await this.showAuthenticationProgress(username);
 
+        // Load existing session data for this user
+        console.log(`[SESSION] Attempting to load session for user: ${username}`);
+        const sessionData = this.loadSession(username);
+        
+        if (sessionData) {
+            console.log(`[SESSION] Found existing session for ${username}, last active: ${new Date(sessionData.lastActive).toLocaleString()}`);
+        } else {
+            console.log(`[SESSION] No existing session found for ${username}, starting fresh`);
+        }
+
         // Store username and proceed to main terminal
         this.currentUser = username;
         this.isLoggedIn = true;
+        
+        // IMPORTANT: Clear current session state before restoring new session
+        this.terminalOutput.innerHTML = '';
+        this.chatHistory = [];
+        this.commandHistory = [];
+        
+        // Restore session data if available
+        if (sessionData) {
+            this.restoreSessionData(sessionData);
+        }
+        
         this.hideLoginScreen();
-        this.showMainTerminal();
+        this.showMainTerminal(sessionData);
     }
 
     showLoginError(message) {
@@ -3175,7 +3430,7 @@ When giving information, be accurate but present it with Mouse's characteristic 
         }, 500);
     }
 
-    showMainTerminal() {
+    showMainTerminal(sessionData = null) {
         // Show the minimize button once logged in
         const minimizeBtn = document.getElementById('minimize-btn');
         if (minimizeBtn) {
@@ -3189,10 +3444,199 @@ When giving information, be accurate but present it with Mouse's characteristic 
         setTimeout(() => {
             this.terminal.style.opacity = '1';
             this.updatePromptDisplay();
-            this.showWelcome();
+            
+            // IMPORTANT: Clear terminal history first for proper session isolation
+            if (!sessionData) {
+                // New user - clear any existing terminal history
+                this.terminalOutput.innerHTML = '';
+            }
+            
+            if (sessionData) {
+                this.showWelcomeBack(sessionData);
+            } else {
+                this.showWelcome();
+            }
+            
+            // Auto-connect to Oracle (will use restored URL if available)
             this.autoConnectToOracle();
+            
+            // Save session after successful login
+            this.saveSession();
+            
             this.terminalInput.focus();
         }, 100);
+    }
+
+    showWelcomeBack(sessionData) {
+        // Add session restoration messages to existing terminal history
+        this.addOutput('', 'success');
+        this.addOutput('='.repeat(60), 'success');
+        this.addOutput('SESSION RESTORED', 'success');
+        this.addOutput('='.repeat(60), 'success');
+        this.addOutput(`WELCOME BACK, ${this.currentUser.toUpperCase()}`, 'success');
+        this.addOutput('', 'success');
+        this.addOutput(`Last active: ${new Date(sessionData.lastActive).toLocaleString()}`, 'info');
+        this.addOutput(`Preferred character: ${this.matrixCharacters[sessionData.selectedCharacter]?.displayName || sessionData.selectedCharacter}`, 'info');
+        this.addOutput(`Oracle endpoint: ${sessionData.oracleUrl}`, 'info');
+        this.addOutput(`Previous model: ${sessionData.selectedModel || 'None'}`, 'info');
+        this.addOutput(`Chat history: ${sessionData.chatHistory?.length || 0} messages`, 'info');
+        this.addOutput(`Command history: ${sessionData.commandHistory?.length || 0} commands`, 'info');
+        this.addOutput(`Matrix mode: ${sessionData.mode}`, 'info');
+        this.addOutput('', 'success');
+        this.addOutput('Your previous settings have been restored.', 'info');
+        this.addOutput('Attempting Oracle reconnection...', 'warning');
+        this.addOutput('Type "help" to see available commands.', 'info');
+        this.addOutput('', 'success');
+        
+        this.updatePromptDisplay();
+    }
+
+    // Session Management Methods
+    
+    saveSession() {
+        if (!this.currentUser) return;
+        
+        const sessionData = {
+            username: this.currentUser,
+            selectedCharacter: this.selectedCharacter,
+            oracleUrl: this.oracleUrl,
+            selectedModel: this.selectedModel,
+            chatHistory: this.chatHistory || [],
+            terminalHistory: this.terminalOutput.innerHTML || '',
+            commandHistory: this.commandHistory || [],
+            speechEnabled: this.speechEnabled,
+            speechRate: this.speechRate,
+            speechPitch: this.speechPitch,
+            speechVolume: this.speechVolume,
+            mode: this.mode,
+            speed: this.speed,
+            lastActive: Date.now()
+        };
+        
+        try {
+            localStorage.setItem(`matrix_session_${this.currentUser}`, JSON.stringify(sessionData));
+            console.log(`[SESSION] Saved session for user: ${this.currentUser}`);
+        } catch (error) {
+            console.error('[SESSION] Failed to save session:', error);
+        }
+    }
+    
+    loadSession(username) {
+        try {
+            const sessionKey = `matrix_session_${username}`;
+            const sessionData = localStorage.getItem(sessionKey);
+            
+            if (sessionData) {
+                const data = JSON.parse(sessionData);
+                
+                // Check if session is not too old (30 days)
+                const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+                if (Date.now() - data.lastActive > maxAge) {
+                    localStorage.removeItem(sessionKey);
+                    return null;
+                }
+                
+                console.log(`[SESSION] Loaded session for user: ${username}`);
+                return data;
+            }
+        } catch (error) {
+            console.error('[SESSION] Failed to load session:', error);
+        }
+        return null;
+    }
+    
+    restoreSessionData(sessionData) {
+        if (!sessionData) return;
+        
+        console.log(`[SESSION] Rest oring session for user: ${sessionData.username}`);
+        console.log(`[SESSION] Session data contains:`, {
+            selectedCharacter: sessionData.selectedCharacter,
+            oracleUrl: sessionData.oracleUrl,
+            selectedModel: sessionData.selectedModel,
+            chatHistoryLength: sessionData.chatHistory?.length || 0,
+            commandHistoryLength: sessionData.commandHistory?.length || 0,
+            hasTerminalHistory: !!sessionData.terminalHistory
+        });
+        
+        // IMPORTANT: Clear terminal first to ensure proper session isolation
+        this.terminalOutput.innerHTML = '';
+        
+        // Restore user preferences
+        this.selectedCharacter = sessionData.selectedCharacter || 'oracle';
+        this.oracleUrl = sessionData.oracleUrl || 'http://127.0.0.1:11434';
+        this.selectedModel = sessionData.selectedModel || null;
+        this.speechEnabled = sessionData.speechEnabled !== undefined ? sessionData.speechEnabled : true;
+        this.speechRate = sessionData.speechRate || 0.8;
+        this.speechPitch = sessionData.speechPitch || 0.7;
+        this.speechVolume = sessionData.speechVolume || 0.8;
+        this.mode = sessionData.mode || 'matrix';
+        this.speed = sessionData.speed || 1;
+        
+        // Restore chat history if available
+        this.chatHistory = sessionData.chatHistory || [];
+        
+        // Restore command history if available
+        this.commandHistory = sessionData.commandHistory || [];
+        
+        // Restore terminal history if available (after clearing)
+        if (sessionData.terminalHistory) {
+            this.terminalOutput.innerHTML = sessionData.terminalHistory;
+            this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
+        }
+        
+        // Reset connection state - session restoration doesn't maintain active connections
+        this.oracleConnected = false;
+        this.availableModels = [];
+        
+        // Update character set based on mode
+        this.allChars = this.mode === 'matrix' ? this.matrixChars : this.symbolChars;
+        
+        // Update all drops with correct character set
+        for (let drop of this.drops) {
+            for (let j = 0; j < drop.chars.length; j++) {
+                drop.chars[j].char = this.getRandomChar();
+            }
+        }
+        
+        console.log(`[SESSION] Restored session data - Character: ${this.selectedCharacter}, Mode: ${this.mode}, Oracle: ${this.oracleUrl}`);
+    }
+    
+    getLastUser() {
+        try {
+            // Find all matrix sessions and get the most recently active one
+            let lastUser = null;
+            let lastActive = 0;
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('matrix_session_')) {
+                    try {
+                        const sessionData = JSON.parse(localStorage.getItem(key));
+                        if (sessionData.lastActive > lastActive) {
+                            lastActive = sessionData.lastActive;
+                            lastUser = sessionData.username;
+                        }
+                    } catch (error) {
+                        // Invalid session data, skip
+                    }
+                }
+            }
+            
+            return lastUser;
+        } catch (error) {
+            console.error('[SESSION] Failed to get last user:', error);
+            return null;
+        }
+    }
+    
+    clearSession(username) {
+        try {
+            const sessionKey = `matrix_session_${username || this.currentUser}`;
+            localStorage.removeItem(sessionKey);
+            console.log(`[SESSION] Cleared session for user: ${username || this.currentUser}`);
+        } catch (error) {
+            console.error('[SESSION] Failed to clear session:', error);
+        }
     }
 
 }
