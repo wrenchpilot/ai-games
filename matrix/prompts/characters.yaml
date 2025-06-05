@@ -1,0 +1,26 @@
+---
+# Matrix Characters Manifest
+# This file lists all available character YAML files to load
+# Add new character files here to make them available in the application
+
+characters:
+  - apoc.yaml
+  - architect.yaml
+  - cypher.yaml
+  - dozer.yaml
+  - merovingian.yaml
+  - morpheus.yaml
+  - mouse.yaml
+  - neo.yaml
+  - oracle.yaml
+  - smith.yaml
+  - spoonboy.yaml
+  - switch.yaml
+  - tank.yaml
+  - trinity.yaml
+  - womaninred.yaml
+
+# Metadata
+version: "1.0"
+description: "Matrix character definitions for the terminal application"
+lastUpdated: "2024-12-19"
