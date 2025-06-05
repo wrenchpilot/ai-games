@@ -3169,6 +3169,12 @@ When giving information, be accurate but present it with Mouse's characteristic 
     }
 
     showMainTerminal() {
+        // Show the minimize button once logged in
+        const minimizeBtn = document.getElementById('minimize-btn');
+        if (minimizeBtn) {
+            minimizeBtn.style.display = 'flex';
+        }
+        
         this.terminal.style.display = 'flex';
         this.terminal.style.opacity = '0';
         this.terminal.style.transition = 'opacity 0.5s ease-in';
