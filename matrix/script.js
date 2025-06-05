@@ -1290,6 +1290,28 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         this.addOutput('Session saved successfully', 'info');
         this.addOutput('Returning to login screen...', 'info');
         
+        // Speak logout messages with proper timing
+        if (this.speechEnabled) {
+            // Make sure any previous speech is cancelled
+            if (this.speechSynthesis && this.speechSynthesis.speaking) {
+                this.speechSynthesis.cancel();
+            }
+            
+            this.speak('Logging out. Welcome back to the real world.', { rate: 0.8, pitch: 0.7 });
+            
+            // Delay logout actions to allow speech to complete
+            const timeoutId = setTimeout(() => {
+                // Don't cancel speech here - let it complete naturally
+                this.completeLogout();
+            }, 3000); // Allow 3 seconds for speech to complete
+            this.activeTimeouts.push(timeoutId);
+        } else {
+            // If speech is disabled, logout immediately
+            this.completeLogout();
+        }
+    }
+    
+    completeLogout() {
         // Reset login state
         this.isLoggedIn = false;
         this.currentUser = null;
