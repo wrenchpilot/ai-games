@@ -50,7 +50,7 @@ class MatrixRain {
         this.currentCommand = ''; // Store current command when navigating history
 
         // Oracle integration
-        this.oracleUrl = 'http://localhost:11434'; // Default Oracle URL
+        this.oracleUrl = 'http://127.0.0.1:11434'; // Default Oracle URL
         this.oracleConnected = false;
         this.availableModels = [];
         this.selectedModel = null;
@@ -1913,7 +1913,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             this.oracleConnected = false;
             this.addOutput(`> Connection failed: ${error.message}`, 'error');
             this.addOutput('> Make sure the Oracle is running and accessible', 'warning');
-            this.addOutput('> Default URL is http://localhost:11434', 'info');
+            this.addOutput('> Default URL is http://127.0.0.1:11434', 'info');
         }
     }
 
@@ -2147,7 +2147,7 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
         this.addOutput('', 'success');
         this.addOutput('Oracle Command Options:', 'warning');
         this.addOutput('oracle connect [url]  - Connect to Oracle instance', 'info');
-        this.addOutput('                       Default: http://localhost:11434', 'info');
+        this.addOutput('                       Default: http://127.0.0.1:11434', 'info');
         this.addOutput('oracle disconnect     - Disconnect from Oracle', 'info');
         this.addOutput('oracle status         - Show connection and model status', 'info');
         this.addOutput('oracle models         - List available models', 'info');
