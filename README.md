@@ -108,11 +108,12 @@ Interactive Matrix digital rain terminal featuring:
 To use the Matrix Terminal's AI chat features:
 
 1. **Install Ollama**: Download from [ollama.ai](https://ollama.ai)
-2. **Start Ollama**: Run `ollama serve` in terminal
-3. **Install a model**: Run `ollama pull llama3.1`
-4. **Open Matrix Terminal**: The terminal will auto-connect to Ollama
+2. **Configure Environment Variables**: [Matrix Terminal README](matrix/README.md#environment-variables-configuration)
+3. **Start Ollama**: Run `ollama serve` in terminal
+4. **Install a model**: Run `ollama pull llama3.1`
+5. **Open Matrix Terminal**: The terminal will auto-connect to Ollama
 
-See the [Matrix Terminal README](matrix/README.md) for detailed setup instructions.
+See the [Matrix Terminal README](matrix/README.md#environment-variables-configuration) for detailed setup instructions.
 
 ### Installation
 

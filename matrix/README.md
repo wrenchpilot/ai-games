@@ -28,24 +28,30 @@ To use the AI chat features with Matrix characters, you need to install and set 
 
 1. **Install Ollama**:
    - **macOS**: Download from [ollama.ai](https://ollama.ai) or use Homebrew:
+
      ```bash
      brew install ollama
      ```
-   - **Linux**: 
+
+   - **Linux**:
+
      ```bash
      curl -fsSL https://ollama.ai/install.sh | sh
      ```
+
    - **Windows**: Download the installer from [ollama.ai](https://ollama.ai)
 
 2. **Start Ollama Service**:
+
    ```bash
    ollama serve
    ```
+
    This starts the Ollama API server on `http://localhost:11434`
 
 3. **Install Required Models**:
    The Matrix Terminal works best with Llama 3.1 or newer models. Install at least one:
-   
+
    ```bash
    # Recommended: Llama 3.1 (8B parameters - good balance of speed and quality)
    ollama pull llama3.1
@@ -58,14 +64,117 @@ To use the AI chat features with Matrix characters, you need to install and set 
    ```
 
 4. **Verify Installation**:
+
    ```bash
    ollama list
    ```
+
    This should show your installed models.
+
+### Environment Variables Configuration
+
+You may need to configure Ollama environment variables for optimal performance or custom setups:
+
+#### macOS
+
+**Method 1: launchctl (System-wide, recommended)**
+
+Use `launchctl setenv` for system-wide environment variables that persist across reboots:
+
+```bash
+# Set Ollama environment variables system-wide
+sudo launchctl setenv OLLAMA_HOST "0.0.0.0:11434"
+sudo launchctl setenv OLLAMA_ORIGINS "*"
+
+# Restart Ollama service to apply changes
+sudo pkill ollama
+ollama serve
+```
+
+#### Linux
+
+Similar to macOS, add to your shell profile:
+
+```bash
+# Edit your shell profile
+nano ~/.bashrc  # or ~/.zshrc if using zsh
+
+# Add Ollama environment variables
+export OLLAMA_HOST="0.0.0.0:11434"
+export OLLAMA_ORIGINS="*"
+
+# Reload your profile
+source ~/.bashrc
+```
+
+For system-wide configuration, you can also create a systemd service file:
+
+```bash
+# Create or edit the service file
+sudo nano /etc/systemd/system/ollama.service
+
+# Add environment variables in the [Service] section:
+[Service]
+Environment="OLLAMA_HOST=0.0.0.0:11434"
+Environment="OLLAMA_ORIGINS=*"
+
+# Reload and restart
+sudo systemctl daemon-reload
+sudo systemctl restart ollama
+```
+
+#### Windows
+
+Set environment variables through System Properties or Command Prompt:
+
+**Method 1: System Properties (GUI)**
+
+1. Right-click "This PC" → Properties → Advanced System Settings
+2. Click "Environment Variables"
+3. Under "User variables" or "System variables", click "New"
+4. Add these variables:
+   - `OLLAMA_HOST` = `0.0.0.0:11434`
+   - `OLLAMA_ORIGINS` = `*`
+
+**Method 2: Command Prompt (PowerShell)**
+
+```powershell
+# Set user environment variables
+[Environment]::SetEnvironmentVariable("OLLAMA_HOST", "0.0.0.0:11434", "User")
+[Environment]::SetEnvironmentVariable("OLLAMA_ORIGINS", "*", "User")
+
+# Restart your terminal or reboot to apply changes
+```
+
+**Method 3: Command Prompt (Traditional)**
+
+```cmd
+setx OLLAMA_HOST "0.0.0.0:11434"
+setx OLLAMA_ORIGINS "*"
+```
+
+#### Common Environment Variables
+
+- **`OLLAMA_HOST`**: The host and port for the Ollama server (default: `127.0.0.1:11434`)
+- **`OLLAMA_ORIGINS`**: Allowed origins for CORS (use `*` for all, or specific URLs)
+- **`OLLAMA_MODELS`**: Custom directory for storing models
+- **`OLLAMA_NUM_PARALLEL`**: Number of parallel model requests (default: 1)
+- **`OLLAMA_MAX_LOADED_MODELS`**: Maximum number of models to keep in memory
+- **`OLLAMA_FLASH_ATTENTION`**: Enable flash attention (set to `1` for better performance on supported hardware)
+- **`OLLAMA_KV_CACHE_TYPE`**: Key-value cache type (`f16` or `q8_0` for memory optimization)
+
+#### Security Note
+
+Setting `OLLAMA_ORIGINS="*"` allows all websites to access your Ollama instance. For production use, specify exact origins:
+
+```bash
+export OLLAMA_ORIGINS="http://localhost:8080,https://yourdomain.com"
+```
 
 ### Network Configuration
 
 The Matrix Terminal automatically discovers Ollama servers on your network:
+
 - First tries `localhost:11434` (default)
 - If localhost fails, scans common local network IP ranges
 - Supports manual connection with `oracle connect [url]`
@@ -159,6 +268,7 @@ chat oracle
 ### Full Setup (With AI Chat Features)
 
 1. **Install and Start Ollama** (see Prerequisites section above):
+
    ```bash
    # Start Ollama service
    ollama serve
@@ -173,6 +283,7 @@ chat oracle
    - If Ollama is on a different machine, use `oracle connect [ip:port]`
 
 3. **Start Chatting**:
+
    ```bash
    # Check connection
    oracle status
@@ -259,6 +370,7 @@ To add a new Matrix character:
 4. Add character color styling if desired
 
 Example:
+
 ```javascript
 // In matrixCharacters object
 'newcharacter': {
