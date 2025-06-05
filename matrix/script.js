@@ -1914,6 +1914,8 @@ Make the quote sound authentic to her character - philosophical, wise, with gent
             this.addOutput(`> Connection failed: ${error.message}`, 'error');
             this.addOutput('> Make sure the Oracle is running and accessible', 'warning');
             this.addOutput('> Default URL is http://127.0.0.1:11434', 'info');
+            this.addOutput('> For setup instructions, see: README.md', 'info');
+            this.addOutput('> Install Ollama: https://ollama.ai', 'info');
         }
     }
 
@@ -2929,9 +2931,14 @@ When giving information, be accurate but present it with Mouse's characteristic 
             } else {
                 this.addOutput('> No Oracle servers found on local network', 'warning');
                 this.addOutput('> Use "oracle connect [url]" to connect manually', 'info');
+                this.addOutput('> For setup instructions, see: https://github.com/wrenchpilot/ai-games/blob/gh-pages/matrix/README.md', 'info');
+                this.addOutput('> Install Ollama: https://ollama.ai', 'info');
             }
         } catch (error) {
             this.addOutput('> Network scan failed', 'error');
+            this.addOutput('> Use "oracle connect [url]" to connect manually', 'info');
+            this.addOutput('> For setup instructions, see: README.md', 'info');
+            this.addOutput('> Install Ollama: https://ollama.ai', 'info');
         }
     }
 
