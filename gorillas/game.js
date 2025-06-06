@@ -179,13 +179,66 @@ class GorillasGame {
         this.fireButton.addEventListener('click', () => this.fire());
         
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                this.fire();
+            // Only allow controls during player 1's turn
+            if (this.currentPlayer !== 1 || this.gameOver || this.projectile || this.isAiThinking) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                }
+                return;
             }
-        });
+            
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    this.fire();
+                    break;
+                    
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.adjustVelocity(1);
+                    break;
+                    
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.adjustVelocity(-1);
+                    break;
+                    
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    this.adjustAngle(-1);
+                    break;
+                    
+                case 'ArrowRight':
+                    e.preventDefault();
+                    this.adjustAngle(1);
+                    break;
+            }
+        });    }
+    
+    adjustAngle(delta) {
+        const currentAngle = parseInt(this.angleInput.value) || 45;
+        const newAngle = Math.max(0, Math.min(90, currentAngle + delta));
+        this.angleInput.value = newAngle;
+        
+        // Visual feedback - briefly highlight the input
+        this.angleInput.style.backgroundColor = '#ffff88';
+        setTimeout(() => {
+            this.angleInput.style.backgroundColor = '';
+        }, 150);
     }
     
+    adjustVelocity(delta) {
+        const currentVelocity = parseInt(this.velocityInput.value) || 50;
+        const newVelocity = Math.max(1, Math.min(100, currentVelocity + delta));
+        this.velocityInput.value = newVelocity;
+        
+        // Visual feedback - briefly highlight the input
+        this.velocityInput.style.backgroundColor = '#ffff88';
+        setTimeout(() => {
+            this.velocityInput.style.backgroundColor = '';
+        }, 150);
+    }
+
     fire() {
         if (this.gameOver || this.projectile || this.isAiThinking) return;
         
