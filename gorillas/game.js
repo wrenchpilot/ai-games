@@ -46,6 +46,7 @@ class GorillasGame {
         this.gameStatus = document.getElementById('gameStatus');
         this.score1 = document.getElementById('score1');
         this.score2 = document.getElementById('score2');
+        this.windInfo = document.getElementById('windInfo');
         
         this.init();
     }
@@ -188,7 +189,7 @@ class GorillasGame {
         this.wind = this.windSpeed * this.windDirection;
         
         const directionText = this.windDirection > 0 ? 'E' : 'W';
-        this.updateStatus(`Wind: ${this.windSpeed.toFixed(1)} ${directionText}`);
+        this.windInfo.textContent = `${this.windSpeed.toFixed(1)} ${directionText}`;
     }
     
     setupEventListeners() {
