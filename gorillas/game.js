@@ -636,12 +636,14 @@ class GorillasGame {
         // Calculate total rounds
         this.gameStats.totalRounds = this.scores[0] + this.scores[1];
         
-        // Calculate AI performance
-        if (this.aiLearning.totalShots > 0) {
-            const accuracy = Math.round((this.aiLearning.hits / this.aiLearning.totalShots) * 100);
-            this.gameStats.aiAccuracy = accuracy;
+        // Calculate AI difficulty level based on total rounds
+        const totalRounds = this.scores[0] + this.scores[1];
+        if (totalRounds < 3) {
+            this.gameStats.difficulty = "Easy";
+        } else if (totalRounds < 6) {
+            this.gameStats.difficulty = "Medium";
         } else {
-            this.gameStats.aiAccuracy = 0;
+            this.gameStats.difficulty = "Hard";
         }
     }
     
@@ -652,7 +654,7 @@ class GorillasGame {
         this.winnerText.textContent = `${winnerName} Win${winner === 1 ? "" : "s"}!`;
         this.finalScore.textContent = `${this.scores[0]} - ${this.scores[1]}`;
         this.totalRounds.textContent = this.gameStats.totalRounds;
-        this.aiStats.textContent = `Hit Rate: ${this.gameStats.aiAccuracy}%`;
+        this.aiStats.textContent = `Difficulty: ${this.gameStats.difficulty}`;
         this.gameDuration.textContent = this.gameStats.gameDuration;
         
         // Show modal
@@ -902,7 +904,7 @@ class GorillasGame {
         this.ctx.moveTo(x, y);
         
         // Simulate trajectory for a limited number of steps (shorter range)
-        const maxSteps = 40; // Further reduced from 60 to show even less trajectory
+        const maxSteps = 25; // Further reduced from 40 to show minimal trajectory
         const timeStep = 1;
         let lastX = x, lastY = y;
         
