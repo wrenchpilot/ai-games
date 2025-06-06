@@ -23,6 +23,11 @@ class GorillasGame {
             adaptationFactor: 1.0
         };
         
+        // Day/night cycle
+        this.isNight = Math.random() > 0.5; // Random start
+        this.skyElements = [];
+        this.generateSkyElements();
+        
         // Sound effects
         this.sounds = {
             throw: this.createAudioContext(),
@@ -436,6 +441,13 @@ class GorillasGame {
         this.generateBuildings();
         this.placeGorillas();
         this.generateWind();
+        
+        // 30% chance to switch day/night cycle each round
+        if (Math.random() < 0.3) {
+            this.isNight = !this.isNight;
+        }
+        this.generateSkyElements();
+        
         this.projectile = null;
         this.explosions = [];
         this.currentPlayer = 1;
@@ -450,7 +462,8 @@ class GorillasGame {
         this.angleInput.value = this.lastPlayerSettings.angle;
         this.velocityInput.value = this.lastPlayerSettings.velocity;
         
-        this.updateStatus(`New round! Player ${this.currentPlayer}, aim and fire!`);
+        const timeOfDay = this.isNight ? "night" : "day";
+        this.updateStatus(`New round! It's ${timeOfDay} time. Player ${this.currentPlayer}, aim and fire!`);
     }
     
     endGame() {
@@ -484,15 +497,13 @@ class GorillasGame {
     }
     
     draw() {
-        // Clear canvas with solid sky color (matches CSS background)
-        this.ctx.fillStyle = '#87ceeb';
+        // Clear canvas with sky color based on day/night
+        const skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
+        this.ctx.fillStyle = skyColor;
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        // Draw sun
-        this.ctx.fillStyle = '#ffff00';
-        this.ctx.beginPath();
-        this.ctx.arc(this.width - 80, 80, 30, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Draw sky elements (sun/moon, clouds, stars)
+        this.drawSkyElements();
         
         // Draw buildings
         this.drawBuildings();
@@ -553,7 +564,8 @@ class GorillasGame {
             if (building.holes) {
                 for (let hole of building.holes) {
                     // Draw hole with sky color instead of transparency
-                    this.ctx.fillStyle = '#87ceeb'; // Match sky background
+                    const skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
+                    this.ctx.fillStyle = skyColor; // Match current sky background
                     this.ctx.beginPath();
                     this.ctx.arc(
                         building.x + hole.x, 
@@ -690,6 +702,43 @@ class GorillasGame {
         }
     }
     
+    drawSkyElements() {
+        for (let element of this.skyElements) {
+            this.ctx.save();
+            
+            if (element.type === 'star') {
+                // Draw twinkling stars
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${element.brightness})`;
+                this.ctx.beginPath();
+                this.ctx.arc(element.x, element.y, element.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Update twinkling effect
+                element.brightness += (Math.random() - 0.5) * 0.1;
+                element.brightness = Math.max(0.3, Math.min(1.0, element.brightness));
+                
+            } else if (element.type === 'cloud') {
+                // Draw emoji clouds with drift
+                this.ctx.font = '32px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(element.emoji, element.x, element.y);
+                
+                // Update cloud position (slow drift)
+                element.x += element.drift;
+                if (element.x < -30) element.x = this.width + 30;
+                if (element.x > this.width + 30) element.x = -30;
+                
+            } else if (element.type === 'sun' || element.type === 'moon') {
+                // Draw emoji sun or moon
+                this.ctx.font = '48px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(element.emoji, element.x, element.y);
+            }
+            
+            this.ctx.restore();
+        }
+    }
+
     gameLoop() {
         this.updateProjectile();
         this.updateExplosions();
@@ -781,6 +830,51 @@ class GorillasGame {
             this.isAiThinking = false;
             this.fire();
         }, 500);
+    }
+
+    generateSkyElements() {
+        this.skyElements = [];
+        
+        if (this.isNight) {
+            // Generate stars for night sky
+            for (let i = 0; i < 50; i++) {
+                this.skyElements.push({
+                    type: 'star',
+                    x: Math.random() * this.width,
+                    y: Math.random() * (this.height * 0.4), // Stars in upper 40% of sky
+                    size: Math.random() * 2 + 1,
+                    brightness: Math.random() * 0.5 + 0.5
+                });
+            }
+            
+            // Add moon
+            this.skyElements.push({
+                type: 'moon',
+                x: this.width - 100 - Math.random() * 200,
+                y: 60 + Math.random() * 100,
+                emoji: ['🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '🌙', '🌛', '🌜', '🌝', '🌚'][Math.floor(Math.random() * 13)]
+            });
+        } else {
+            // Add sun for day
+            this.skyElements.push({
+                type: 'sun',
+                x: this.width - 100 - Math.random() * 200,
+                y: 60 + Math.random() * 100,
+                emoji: ['☀️', '🌞', '⛅️', '🌤️', '🌥️', '🌦️', '🥵', '😎'][Math.floor(Math.random() * 8)]
+            });
+        }
+        
+        // Add clouds (day or night)
+        const numClouds = Math.floor(Math.random() * 4) + 2; // 2-5 clouds
+        for (let i = 0; i < numClouds; i++) {
+            this.skyElements.push({
+                type: 'cloud',
+                x: Math.random() * this.width,
+                y: Math.random() * (this.height * 0.3) + 20, // Clouds in upper 30% of sky
+                emoji: ['☁️', '🌧️', '🌨️', '⛈️', '🌩️'][Math.floor(Math.random() * 5)],
+                drift: (Math.random() - 0.5) * 0.5 // Slow horizontal drift
+            });
+        }
     }
 }
 
