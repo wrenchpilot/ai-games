@@ -355,8 +355,29 @@ class GorillasGame {
             if (this.projectile.x >= building.x && 
                 this.projectile.x <= building.x + building.width &&
                 this.projectile.y >= building.y) {
-                this.hitBuilding(building);
-                return;
+                
+                // Check if projectile is hitting a hole (should pass through)
+                let hitHole = false;
+                if (building.holes) {
+                    for (let hole of building.holes) {
+                        const holeX = building.x + hole.x;
+                        const holeY = building.y + hole.y;
+                        const distance = Math.sqrt(
+                            (this.projectile.x - holeX) ** 2 + 
+                            (this.projectile.y - holeY) ** 2
+                        );
+                        if (distance < hole.width / 2) {
+                            hitHole = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Only hit building if not hitting a hole
+                if (!hitHole) {
+                    this.hitBuilding(building);
+                    return;
+                }
             }
         }
     }
@@ -396,17 +417,57 @@ class GorillasGame {
         this.createExplosion(this.projectile.x, this.projectile.y);
         this.playExplosionSound();
         
-        // Create circular hole in building
-        const holeSize = 60;
-        const holeX = this.projectile.x - building.x;
-        const holeY = this.projectile.y - building.y;
+        const hitX = this.projectile.x - building.x;
+        const hitY = this.projectile.y - building.y;
         
         if (!building.holes) building.holes = [];
-        building.holes.push({
-            x: holeX,
-            y: holeY,
-            width: holeSize
-        });
+        
+        // Check if this hit is near an existing hole for cumulative damage
+        let nearbyHole = null;
+        let nearbyDistance = Infinity;
+        const maxCombineDistance = 80; // Distance within which holes combine
+        
+        for (let hole of building.holes) {
+            const distance = Math.sqrt(
+                Math.pow(hitX - hole.x, 2) + 
+                Math.pow(hitY - hole.y, 2)
+            );
+            
+            if (distance < maxCombineDistance && distance < nearbyDistance) {
+                nearbyHole = hole;
+                nearbyDistance = distance;
+            }
+        }
+        
+        if (nearbyHole) {
+            // Calculate distance from impact point to hole center
+            const distanceToCenter = Math.sqrt(
+                Math.pow(hitX - nearbyHole.x, 2) + 
+                Math.pow(hitY - nearbyHole.y, 2)
+            );
+            
+            // Calculate how much the hole needs to expand to encompass the new impact point
+            const currentRadius = nearbyHole.width / 2;
+            const impactExpansionRadius = 30; // Explosion radius from impact point
+            const requiredRadius = distanceToCenter + impactExpansionRadius;
+            
+            // Expand hole to encompass the impact point, but don't move the center
+            if (requiredRadius > currentRadius) {
+                const newRadius = Math.min(requiredRadius, 75); // Cap maximum hole radius at 75
+                nearbyHole.width = newRadius * 2;
+            }
+            
+            // Visual feedback for expanding hole
+            this.createExpandedExplosion(this.projectile.x, this.projectile.y, nearbyHole.width);
+        } else {
+            // Create new hole
+            const baseHoleSize = 60;
+            building.holes.push({
+                x: hitX,
+                y: hitY,
+                width: baseHoleSize
+            });
+        }
         
         this.projectile = null;
         this.nextTurn();
@@ -422,9 +483,22 @@ class GorillasGame {
         });
     }
     
+    createExpandedExplosion(x, y, holeSize) {
+        // Create a larger explosion to show hole expansion
+        this.explosions.push({
+            x: x,
+            y: y,
+            radius: 0,
+            maxRadius: Math.min(holeSize * 0.6, 50), // Scale with hole size but cap it
+            life: 40, // Last longer than regular explosions
+            expanded: true // Mark as expanded explosion for different visual effect
+        });
+    }
+    
     updateExplosions() {
         this.explosions = this.explosions.filter(explosion => {
-            explosion.radius += explosion.maxRadius / 30;
+            const maxLife = explosion.expanded ? 40 : 30;
+            explosion.radius += explosion.maxRadius / maxLife;
             explosion.life--;
             return explosion.life > 0;
         });
@@ -840,16 +914,36 @@ class GorillasGame {
     
     drawExplosions() {
         for (let explosion of this.explosions) {
-            const alpha = explosion.life / 30;
-            this.ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
-            this.ctx.beginPath();
-            this.ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
-            this.ctx.fill();
+            const alpha = explosion.life / (explosion.expanded ? 40 : 30);
             
-            this.ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.7})`;
-            this.ctx.beginPath();
-            this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.6, 0, Math.PI * 2);
-            this.ctx.fill();
+            if (explosion.expanded) {
+                // Expanded explosion - different colors and effects
+                this.ctx.fillStyle = `rgba(255, 50, 50, ${alpha})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = `rgba(255, 150, 0, ${alpha * 0.8})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.7, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = `rgba(255, 255, 100, ${alpha * 0.6})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.4, 0, Math.PI * 2);
+                this.ctx.fill();
+            } else {
+                // Regular explosion
+                this.ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.7})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.6, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
         }
     }
     
