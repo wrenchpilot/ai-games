@@ -37,6 +37,7 @@ body {
 .score-board {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px;
 }
 
@@ -49,7 +50,7 @@ body {
 
 #gameCanvas {
     border: 2px solid #00ff00;
-    background: #87ceeb;
+    background: #87ceeb; /* Default day sky, will be overridden by canvas drawing */
     display: block;
     margin: 0 auto 20px;
     border-radius: 5px;
@@ -58,22 +59,22 @@ body {
 .game-controls {
     text-align: center;
     margin-bottom: 20px;
+    padding-bottom: 5px; /* Add some padding since we removed the visible game status */
 }
 
 .control-panel {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
     margin-bottom: 15px;
 }
 
-.player-turn {
-    font-size: 1.2em;
-    color: #ffff00;
-    font-weight: bold;
-    text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+.controls-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .input-group {
@@ -86,36 +87,46 @@ body {
 .input-group label {
     font-size: 0.9em;
     color: #00ff00;
+    white-space: nowrap;
 }
 
 .input-group input {
     width: 80px;
-    padding: 5px;
-    border: 1px solid #00ff00;
+    padding: 8px;
+    border: 2px solid #00ff00;
     background: #000;
     color: #00ff00;
     text-align: center;
-    border-radius: 3px;
+    border-radius: 5px;
     font-family: 'Courier New', monospace;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
 .input-group input:focus {
     outline: none;
-    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+    border-color: #00ff88;
 }
 
 .fire-btn {
     background: linear-gradient(45deg, #ff4444, #cc0000);
     color: white;
     border: 2px solid #ff6666;
-    padding: 10px 20px;
+    padding: 10px 25px;
     font-size: 1.1em;
     font-weight: bold;
     border-radius: 5px;
     cursor: pointer;
     font-family: 'Courier New', monospace;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .fire-btn:hover {
@@ -142,6 +153,7 @@ body {
     font-weight: bold;
     min-height: 25px;
     text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+    display: none; /* Hide the HTML element since we're drawing it on canvas */
 }
 
 .instructions {
@@ -202,4 +214,218 @@ body {
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    margin: 10% auto;
+    padding: 0;
+    border: 3px solid #00ff00;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(45deg, #00ff00, #00cc00);
+    color: #000;
+    padding: 20px;
+    text-align: center;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 2px solid #00ff00;
+    position: relative;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #000;
+    transition: all 0.2s ease;
+    line-height: 1;
+    user-select: none;
+}
+
+.modal-close:hover {
+    color: #ff0000;
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 25px;
+    color: #00ff00;
+}
+
+.winner-announcement {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.winner-announcement p {
+    font-size: 1.5em;
+    color: #ffff00;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+    margin: 0;
+}
+
+.game-stats h3 {
+    color: #00ff00;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-item {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9em;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffff00;
+    text-shadow: 0 0 5px rgba(255, 255, 0, 0.3);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal-btn.primary {
+    background: linear-gradient(45deg, #ff4444, #cc0000);
+    color: white;
+    border: 2px solid #ff6666;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.modal-btn.primary:hover {
+    background: linear-gradient(45deg, #ff6666, #ff0000);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+}
+
+.modal-btn.secondary {
+    background: transparent;
+    color: #00ff00;
+    border: 2px solid #00ff00;
+}
+
+.modal-btn.secondary:hover {
+    background: rgba(0, 255, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
+}
+
+.modal-btn:active {
+    transform: translateY(0);
+}
+
+.player-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.turn-indicator {
+    font-size: 1em;
+    color: #ffff00;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+    visibility: hidden; /* Initially hidden, will be shown via JS */
+    height: 20px;
+    margin-bottom: 3px;
+}
+
+.turn-indicator.active {
+    visibility: visible;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .controls-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .input-group {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .fire-btn {
+        width: 100%;
+        max-width: 200px;
+    }
 }

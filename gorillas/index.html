@@ -14,11 +14,20 @@
         <header class="game-header">
             <h1>GORILLAS</h1>
             <div class="score-board">
-                <div class="player-score">
-                    <span>Player 1: <span id="score1">0</span></span>
+                <div class="player-column">
+                    <div class="turn-indicator" id="player1Turn">Your Turn</div>
+                    <div class="player-score">
+                        <span>Player 1: <span id="score1">0</span></span>
+                    </div>
                 </div>
                 <div class="player-score">
-                    <span>Player 2: <span id="score2">0</span></span>
+                    <span>Wind: <span id="windInfo">0.0 E</span></span>
+                </div>
+                <div class="player-column">
+                    <div class="turn-indicator" id="player2Turn">Computer's Turn</div>
+                    <div class="player-score">
+                        <span>Computer: <span id="score2">0</span></span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -27,22 +36,62 @@
         
         <div class="game-controls">
             <div class="control-panel" id="controlPanel">
-                <div class="player-turn" id="playerTurn">Player 1's Turn</div>
-                <div class="input-group">
-                    <label for="angle">Angle (0-90°):</label>
-                    <input type="number" id="angle" min="0" max="90" value="45">
+                <div class="controls-row">
+                    <div class="input-group">
+                        <label for="angle">Angle (0-90°):</label>
+                        <input type="number" id="angle" min="0" max="90" value="45">
+                    </div>
+                    <div class="input-group">
+                        <label for="velocity">Velocity (1-100):</label>
+                        <input type="number" id="velocity" min="1" max="100" value="50">
+                    </div>
+                    <button id="fireButton" class="fire-btn">THROW!</button>
                 </div>
-                <div class="input-group">
-                    <label for="velocity">Velocity (1-100):</label>
-                    <input type="number" id="velocity" min="1" max="100" value="50">
-                </div>
-                <button id="fireButton" class="fire-btn">FIRE!</button>
             </div>
             <div class="game-status" id="gameStatus"></div>
         </div>
         
         <div class="instructions">
             <p>Destroy your opponent by throwing bananas! Adjust angle and velocity, then fire!</p>
+            <p><strong>Controls:</strong> ↑↓ = Velocity, ←→ = Angle, Space = Fire</p>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="gameOverTitle">🎉 Game Over! 🎉</h2>
+            </div>
+            <div class="modal-body">
+                <div class="winner-announcement">
+                    <p id="winnerText">Player 1 Wins!</p>
+                </div>
+                <div class="game-stats">
+                    <h3>Game Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Final Score:</span>
+                            <span class="stat-value" id="finalScore">3 - 2</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Rounds:</span>
+                            <span class="stat-value" id="totalRounds">5</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">AI Difficulty:</span>
+                            <span class="stat-value" id="aiStats">Medium</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Game Duration:</span>
+                            <span class="stat-value" id="gameDuration">2:45</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="playAgainBtn" class="modal-btn primary">Play Again</button>
+                </div>
+            </div>
         </div>
     </div>
     

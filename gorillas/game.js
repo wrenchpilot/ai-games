@@ -23,6 +23,25 @@ class GorillasGame {
             adaptationFactor: 1.0
         };
         
+        // Store current status message for canvas rendering
+        this.statusMessage = "";
+        
+        // Game statistics
+        this.gameStats = {
+            startTime: Date.now(),
+            totalRounds: 0,
+            shotsTotal: 0,
+            shotsHit: 0
+        };
+        
+        // Day/night cycle
+        this.isNight = Math.random() > 0.5; // Random start
+        this.skyElements = [];
+        
+        // Initialize wind values before generating sky elements
+        this.windSpeed = 0;
+        this.windDirection = 1;
+        
         // Sound effects
         this.sounds = {
             throw: this.createAudioContext(),
@@ -34,10 +53,23 @@ class GorillasGame {
         this.angleInput = document.getElementById('angle');
         this.velocityInput = document.getElementById('velocity');
         this.fireButton = document.getElementById('fireButton');
-        this.playerTurn = document.getElementById('playerTurn');
+        this.player1Turn = document.getElementById('player1Turn');
+        this.player2Turn = document.getElementById('player2Turn');
         this.gameStatus = document.getElementById('gameStatus');
         this.score1 = document.getElementById('score1');
         this.score2 = document.getElementById('score2');
+        this.windInfo = document.getElementById('windInfo');
+        
+        // Modal elements
+        this.gameOverModal = document.getElementById('gameOverModal');
+        this.gameOverTitle = document.getElementById('gameOverTitle');
+        this.winnerText = document.getElementById('winnerText');
+        this.finalScore = document.getElementById('finalScore');
+        this.totalRounds = document.getElementById('totalRounds');
+        this.aiStats = document.getElementById('aiStats');
+        this.gameDuration = document.getElementById('gameDuration');
+        this.playAgainBtn = document.getElementById('playAgainBtn');
+        this.modalContent = document.querySelector('.modal-content');
         
         this.init();
     }
@@ -97,6 +129,12 @@ class GorillasGame {
         this.generateBuildings();
         this.placeGorillas();
         this.generateWind();
+        this.generateSkyElements(); // Move sky generation after wind is set
+        
+        // Initialize turn indicators
+        this.player1Turn.classList.add('active');
+        this.player2Turn.classList.remove('active');
+        
         this.setupEventListeners();
         this.gameLoop();
     }
@@ -171,21 +209,104 @@ class GorillasGame {
     }
     
     generateWind() {
-        this.wind = (Math.random() - 0.5) * 10;
-        this.updateStatus(`Wind: ${this.wind.toFixed(1)} ${this.wind > 0 ? 'E' : 'W'}`);
+        // Wind speed: 0-10 (always positive)
+        this.windSpeed = Math.random() * 10;
+        // Wind direction: 1 for East (right), -1 for West (left)
+        this.windDirection = Math.random() > 0.5 ? 1 : -1;
+        // Combined wind effect for projectile physics (can be negative)
+        this.wind = this.windSpeed * this.windDirection;
+        
+        const directionText = this.windDirection > 0 ? 'E' : 'W';
+        this.windInfo.textContent = `${this.windSpeed.toFixed(1)} ${directionText}`;
     }
     
     setupEventListeners() {
         this.fireButton.addEventListener('click', () => this.fire());
         
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                this.fire();
-            }
+        // Add input event listeners for real-time trajectory updates
+        this.angleInput.addEventListener('input', () => {
+            // Force a redraw to update trajectory indicator
+            this.draw();
         });
+        
+        this.velocityInput.addEventListener('input', () => {
+            // Force a redraw to update trajectory indicator
+            this.draw();
+        });
+        
+        // Modal event listeners
+        this.playAgainBtn.addEventListener('click', () => {
+            this.hideModal();
+            this.resetGame();
+        });
+        
+        // Prevent propagation from modal content to prevent closing when clicking on the content
+        this.modalContent.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            // Only allow controls during player 1's turn
+            if (this.currentPlayer !== 1 || this.gameOver || this.projectile || this.isAiThinking) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                }
+                return;
+            }
+            
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    this.fire();
+                    break;
+                    
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.adjustVelocity(1);
+                    break;
+                    
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.adjustVelocity(-1);
+                    break;
+                    
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    this.adjustAngle(-1);
+                    break;
+                    
+                case 'ArrowRight':
+                    e.preventDefault();
+                    this.adjustAngle(1);
+                    break;
+            }
+        });    }
+    
+    adjustAngle(delta) {
+        const currentAngle = parseInt(this.angleInput.value) || 45;
+        const newAngle = Math.max(0, Math.min(90, currentAngle + delta));
+        this.angleInput.value = newAngle;
+        
+        // Visual feedback - briefly highlight the input
+        this.angleInput.style.backgroundColor = '#ffff88';
+        setTimeout(() => {
+            this.angleInput.style.backgroundColor = '';
+        }, 150);
     }
     
+    adjustVelocity(delta) {
+        const currentVelocity = parseInt(this.velocityInput.value) || 50;
+        const newVelocity = Math.max(1, Math.min(100, currentVelocity + delta));
+        this.velocityInput.value = newVelocity;
+        
+        // Visual feedback - briefly highlight the input
+        this.velocityInput.style.backgroundColor = '#ffff88';
+        setTimeout(() => {
+            this.velocityInput.style.backgroundColor = '';
+        }, 150);
+    }
+
     fire() {
         if (this.gameOver || this.projectile || this.isAiThinking) return;
         
@@ -274,8 +395,29 @@ class GorillasGame {
             if (this.projectile.x >= building.x && 
                 this.projectile.x <= building.x + building.width &&
                 this.projectile.y >= building.y) {
-                this.hitBuilding(building);
-                return;
+                
+                // Check if projectile is hitting a hole (should pass through)
+                let hitHole = false;
+                if (building.holes) {
+                    for (let hole of building.holes) {
+                        const holeX = building.x + hole.x;
+                        const holeY = building.y + hole.y;
+                        const distance = Math.sqrt(
+                            (this.projectile.x - holeX) ** 2 + 
+                            (this.projectile.y - holeY) ** 2
+                        );
+                        if (distance < hole.width / 2) {
+                            hitHole = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Only hit building if not hitting a hole
+                if (!hitHole) {
+                    this.hitBuilding(building);
+                    return;
+                }
             }
         }
     }
@@ -315,17 +457,57 @@ class GorillasGame {
         this.createExplosion(this.projectile.x, this.projectile.y);
         this.playExplosionSound();
         
-        // Create circular hole in building
-        const holeSize = 60;
-        const holeX = this.projectile.x - building.x;
-        const holeY = this.projectile.y - building.y;
+        const hitX = this.projectile.x - building.x;
+        const hitY = this.projectile.y - building.y;
         
         if (!building.holes) building.holes = [];
-        building.holes.push({
-            x: holeX,
-            y: holeY,
-            width: holeSize
-        });
+        
+        // Check if this hit is near an existing hole for cumulative damage
+        let nearbyHole = null;
+        let nearbyDistance = Infinity;
+        const maxCombineDistance = 80; // Distance within which holes combine
+        
+        for (let hole of building.holes) {
+            const distance = Math.sqrt(
+                Math.pow(hitX - hole.x, 2) + 
+                Math.pow(hitY - hole.y, 2)
+            );
+            
+            if (distance < maxCombineDistance && distance < nearbyDistance) {
+                nearbyHole = hole;
+                nearbyDistance = distance;
+            }
+        }
+        
+        if (nearbyHole) {
+            // Calculate distance from impact point to hole center
+            const distanceToCenter = Math.sqrt(
+                Math.pow(hitX - nearbyHole.x, 2) + 
+                Math.pow(hitY - nearbyHole.y, 2)
+            );
+            
+            // Calculate how much the hole needs to expand to encompass the new impact point
+            const currentRadius = nearbyHole.width / 2;
+            const impactExpansionRadius = 30; // Explosion radius from impact point
+            const requiredRadius = distanceToCenter + impactExpansionRadius;
+            
+            // Expand hole to encompass the impact point, but don't move the center
+            if (requiredRadius > currentRadius) {
+                const newRadius = Math.min(requiredRadius, 75); // Cap maximum hole radius at 75
+                nearbyHole.width = newRadius * 2;
+            }
+            
+            // Visual feedback for expanding hole
+            this.createExpandedExplosion(this.projectile.x, this.projectile.y, nearbyHole.width);
+        } else {
+            // Create new hole
+            const baseHoleSize = 60;
+            building.holes.push({
+                x: hitX,
+                y: hitY,
+                width: baseHoleSize
+            });
+        }
         
         this.projectile = null;
         this.nextTurn();
@@ -341,9 +523,22 @@ class GorillasGame {
         });
     }
     
+    createExpandedExplosion(x, y, holeSize) {
+        // Create a larger explosion to show hole expansion
+        this.explosions.push({
+            x: x,
+            y: y,
+            radius: 0,
+            maxRadius: Math.min(holeSize * 0.6, 50), // Scale with hole size but cap it
+            life: 40, // Last longer than regular explosions
+            expanded: true // Mark as expanded explosion for different visual effect
+        });
+    }
+    
     updateExplosions() {
         this.explosions = this.explosions.filter(explosion => {
-            explosion.radius += explosion.maxRadius / 30;
+            const maxLife = explosion.expanded ? 40 : 30;
+            explosion.radius += explosion.maxRadius / maxLife;
             explosion.life--;
             return explosion.life > 0;
         });
@@ -351,7 +546,15 @@ class GorillasGame {
     
     nextTurn() {
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        this.playerTurn.textContent = `Player ${this.currentPlayer}'s Turn`;
+        
+        // Update turn indicators
+        if (this.currentPlayer === 1) {
+            this.player1Turn.classList.add('active');
+            this.player2Turn.classList.remove('active');
+        } else {
+            this.player1Turn.classList.remove('active');
+            this.player2Turn.classList.add('active');
+        }
         
         if (this.currentPlayer === 2) {
             // AI turn - disable player controls
@@ -383,10 +586,20 @@ class GorillasGame {
         this.generateBuildings();
         this.placeGorillas();
         this.generateWind();
+        
+        // 30% chance to switch day/night cycle each round
+        if (Math.random() < 0.3) {
+            this.isNight = !this.isNight;
+        }
+        this.generateSkyElements();
+        
         this.projectile = null;
         this.explosions = [];
         this.currentPlayer = 1;
-        this.playerTurn.textContent = `Player ${this.currentPlayer}'s Turn`;
+        
+        // Update turn indicators
+        this.player1Turn.classList.add('active');
+        this.player2Turn.classList.remove('active');
         
         // Enable player 1 controls for new round
         this.fireButton.disabled = false;
@@ -397,27 +610,82 @@ class GorillasGame {
         this.angleInput.value = this.lastPlayerSettings.angle;
         this.velocityInput.value = this.lastPlayerSettings.velocity;
         
-        this.updateStatus(`New round! Player ${this.currentPlayer}, aim and fire!`);
+        const timeOfDay = this.isNight ? "night" : "day";
+        this.updateStatus(`New round! It's ${timeOfDay} time. Player ${this.currentPlayer}, aim and fire!`);
     }
     
     endGame() {
         this.gameOver = true;
         const winner = this.scores[0] >= 3 ? 1 : 2;
-        const winnerName = winner === 1 ? "You" : "AI";
-        this.updateStatus(`🎉 ${winnerName} win${winner === 1 ? "" : "s"} the game! 🎉`);
+        this.updateStatus(`🎉 Game Over! 🎉`);
         this.fireButton.disabled = true;
         
-        setTimeout(() => {
-            if (confirm(`${winnerName} win${winner === 1 ? "" : "s"}! Play again?`)) {
-                this.resetGame();
-            }
-        }, 1000);
+        // Calculate and display game statistics
+        this.calculateGameStats();
+        this.showModal(winner);
+    }
+    
+    calculateGameStats() {
+        // Calculate game duration
+        const gameEndTime = Date.now();
+        const durationMs = gameEndTime - this.gameStats.startTime;
+        const minutes = Math.floor(durationMs / 60000);
+        const seconds = Math.floor((durationMs % 60000) / 1000);
+        this.gameStats.gameDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Calculate total rounds
+        this.gameStats.totalRounds = this.scores[0] + this.scores[1];
+        
+        // Calculate AI difficulty level based on total rounds
+        const totalRounds = this.scores[0] + this.scores[1];
+        if (totalRounds < 3) {
+            this.gameStats.difficulty = "Easy";
+        } else if (totalRounds < 6) {
+            this.gameStats.difficulty = "Medium";
+        } else {
+            this.gameStats.difficulty = "Hard";
+        }
+    }
+    
+    showModal(winner) {
+        const winnerName = winner === 1 ? "You" : "AI";
+        
+        // Update modal content
+        this.winnerText.textContent = `${winnerName} Win${winner === 1 ? "" : "s"}!`;
+        this.finalScore.textContent = `${this.scores[0]} - ${this.scores[1]}`;
+        this.totalRounds.textContent = this.gameStats.totalRounds;
+        this.aiStats.textContent = `Difficulty: ${this.gameStats.difficulty}`;
+        this.gameDuration.textContent = this.gameStats.gameDuration;
+        
+        // Show modal
+        this.gameOverModal.style.display = 'flex';
+    }
+    
+    hideModal() {
+        this.gameOverModal.style.display = 'none';
     }
     
     resetGame() {
         this.scores = [0, 0];
         this.updateScores();
         this.gameOver = false;
+        
+        // Reset game statistics
+        this.gameStats = {
+            startTime: Date.now(),
+            totalRounds: 0,
+            shotsTotal: 0,
+            shotsHit: 0
+        };
+        
+        // Reset AI learning data
+        this.aiLearning = {
+            totalShots: 0,
+            hits: 0,
+            lastSuccessfulShot: null,
+            adaptationFactor: 1.0
+        };
+        
         this.newRound();
     }
     
@@ -428,21 +696,30 @@ class GorillasGame {
     
     updateStatus(message) {
         this.gameStatus.textContent = message;
+        this.statusMessage = message; // Store for canvas rendering
     }
     
     draw() {
-        // Clear canvas with sky gradient
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
-        gradient.addColorStop(0, '#87ceeb');
-        gradient.addColorStop(1, '#b0e0e6');
-        this.ctx.fillStyle = gradient;
+        // Check for storm clouds to determine sky atmosphere
+        const hasStormClouds = this.skyElements.some(element => 
+            element.type === 'cloud' && (element.emoji === '🌧️' || element.emoji === '🌨️' || element.emoji === '⛈️' || element.emoji === '🌩️')
+        );
+        
+        // Clear canvas with sky color based on day/night and weather
+        let skyColor;
+        if (hasStormClouds) {
+            // Gray, stormy sky when weather clouds are present
+            skyColor = this.isNight ? '#2a2a3a' : '#778899'; // Darker gray for night, lighter gray for day
+        } else {
+            // Normal sky colors
+            skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
+        }
+        
+        this.ctx.fillStyle = skyColor;
         this.ctx.fillRect(0, 0, this.width, this.height);
         
-        // Draw sun
-        this.ctx.fillStyle = '#ffff00';
-        this.ctx.beginPath();
-        this.ctx.arc(this.width - 80, 80, 30, 0, Math.PI * 2);
-        this.ctx.fill();
+        // Draw sky elements (sun/moon, clouds, stars)
+        this.drawSkyElements();
         
         // Draw buildings
         this.drawBuildings();
@@ -450,11 +727,17 @@ class GorillasGame {
         // Draw gorillas
         this.drawGorillas();
         
+        // Draw trajectory indicator
+        this.drawTrajectoryIndicator();
+        
         // Draw projectile
         this.drawProjectile();
         
         // Draw explosions
         this.drawExplosions();
+        
+        // Draw game status overlay
+        this.drawGameStatus();
     }
     
     drawBuildings() {
@@ -465,13 +748,23 @@ class GorillasGame {
             
             // Draw windows using pre-generated window data
             for (let window of building.windows) {
-                // Check if window is not inside a hole
+                // Check if window is not inside a hole (proper circular collision)
                 let windowInHole = false;
                 if (building.holes) {
                     for (let hole of building.holes) {
-                        const holeLeft = building.x + hole.x;
-                        const holeRight = holeLeft + hole.width;
-                        if (window.x >= holeLeft && window.x + window.width <= holeRight) {
+                        // Calculate distance from window center to hole center
+                        const windowCenterX = window.x + window.width / 2;
+                        const windowCenterY = window.y + window.height / 2;
+                        const holeCenterX = building.x + hole.x;
+                        const holeCenterY = building.y + hole.y;
+                        
+                        const distance = Math.sqrt(
+                            Math.pow(windowCenterX - holeCenterX, 2) + 
+                            Math.pow(windowCenterY - holeCenterY, 2)
+                        );
+                        
+                        // If window is within the hole radius, hide it
+                        if (distance < hole.width / 2) {
                             windowInHole = true;
                             break;
                         }
@@ -492,20 +785,29 @@ class GorillasGame {
             // Draw holes (destroy parts of the building)
             if (building.holes) {
                 for (let hole of building.holes) {
-                    // Use composite operation to "cut out" the hole
-                    this.ctx.save();
-                    this.ctx.globalCompositeOperation = 'destination-out';
-                    this.ctx.fillStyle = '#000';
+                    // Check for storm clouds to match sky color
+                    const hasStormClouds = this.skyElements.some(element => 
+                        element.type === 'cloud' && (element.emoji === '🌧️' || element.emoji === '🌨️' || element.emoji === '⛈️' || element.emoji === '🌩️')
+                    );
+                    
+                    // Draw hole with appropriate sky color
+                    let skyColor;
+                    if (hasStormClouds) {
+                        skyColor = this.isNight ? '#2a2a3a' : '#778899';
+                    } else {
+                        skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
+                    }
+                    
+                    this.ctx.fillStyle = skyColor;
                     this.ctx.beginPath();
                     this.ctx.arc(
-                        building.x + hole.x + hole.width / 2, 
-                        building.y + hole.width / 2, 
+                        building.x + hole.x, 
+                        building.y + hole.y, 
                         hole.width / 2, 
                         0, 
                         Math.PI * 2
                     );
                     this.ctx.fill();
-                    this.ctx.restore();
                 }
             }
         }
@@ -569,6 +871,97 @@ class GorillasGame {
         }
     }
     
+    drawTrajectoryIndicator() {
+        // Only show trajectory when it's player 1's turn and no projectile is active
+        if (this.gameOver || this.projectile || this.isAiThinking || this.currentPlayer === 2) {
+            return;
+        }
+        
+        const angle = parseInt(this.angleInput.value) || 45;
+        const velocity = parseInt(this.velocityInput.value) || 50;
+        
+        if (isNaN(angle) || isNaN(velocity)) return;
+        
+        const gorilla = this.gorillas[this.currentPlayer - 1];
+        const radians = (angle * Math.PI) / 180;
+        const direction = this.currentPlayer === 1 ? 1 : -1;
+        
+        // Starting position (same as projectile)
+        let x = gorilla.x + (direction * 20);
+        let y = gorilla.y - 25;
+        
+        // Initial velocity with reduced accuracy (only show approximate trajectory)
+        // Add some randomness to make it less precise
+        const accuracyFactor = 0.8; // Reduce accuracy to 80%
+        let vx = Math.cos(radians) * velocity * 0.15 * direction * accuracyFactor;
+        let vy = -Math.sin(radians) * velocity * 0.15 * accuracyFactor;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)'; // More transparent
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([8, 4]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        
+        // Simulate trajectory for a limited number of steps (shorter range)
+        const maxSteps = 25; // Further reduced from 40 to show minimal trajectory
+        const timeStep = 1;
+        let lastX = x, lastY = y;
+        
+        for (let step = 0; step < maxSteps; step++) {
+            // Update position using same physics as projectile
+            x += vx * timeStep;
+            y += vy * timeStep;
+            vy += 0.15 * timeStep; // gravity
+            vx += this.wind * 0.005 * timeStep; // wind effect
+            
+            // No random drift - keep trajectory smooth but inaccurate due to reduced accuracy factor
+            
+            // Stop if trajectory goes off screen or hits ground
+            if (x < 0 || x > this.width || y > this.height) {
+                break;
+            }
+            
+            // Check if trajectory would hit a building (simplified check)
+            let hitBuilding = false;
+            for (let building of this.buildings) {
+                if (x >= building.x && x <= building.x + building.width &&
+                    y >= building.y && y <= building.y + building.height) {
+                    // Simplified collision - don't check holes for trajectory indicator
+                    hitBuilding = true;
+                    break;
+                }
+            }
+            
+            if (hitBuilding) {
+                // Draw line to approximate impact point (not exact)
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                
+                // Draw a larger, more vague impact indicator
+                this.ctx.fillStyle = 'rgba(255, 200, 0, 0.6)';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 12, 0, Math.PI * 2); // Larger radius for vague indication
+                this.ctx.fill();
+                this.ctx.restore();
+                return;
+            }
+            
+            // Draw trajectory line every few steps for choppier appearance
+            if (step % 3 === 0) { // Draw every 3rd step instead of every 2nd
+                this.ctx.lineTo(x, y);
+            }
+            
+            lastX = x;
+            lastY = y;
+        }
+        
+        // If we reach here, trajectory went off screen
+        this.ctx.stroke();
+        this.ctx.restore();
+    }
+    
     drawProjectile() {
         if (!this.projectile) return;
         
@@ -620,110 +1013,207 @@ class GorillasGame {
     
     drawExplosions() {
         for (let explosion of this.explosions) {
-            const alpha = explosion.life / 30;
-            this.ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
-            this.ctx.beginPath();
-            this.ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
-            this.ctx.fill();
+            const alpha = explosion.life / (explosion.expanded ? 40 : 30);
             
-            this.ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.7})`;
-            this.ctx.beginPath();
-            this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.6, 0, Math.PI * 2);
-            this.ctx.fill();
+            if (explosion.expanded) {
+                // Expanded explosion - different colors and effects
+                this.ctx.fillStyle = `rgba(255, 50, 50, ${alpha})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = `rgba(255, 150, 0, ${alpha * 0.8})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.7, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = `rgba(255, 255, 100, ${alpha * 0.6})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.4, 0, Math.PI * 2);
+                this.ctx.fill();
+            } else {
+                // Regular explosion
+                this.ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.7})`;
+                this.ctx.beginPath();
+                this.ctx.arc(explosion.x, explosion.y, explosion.radius * 0.6, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
         }
     }
     
+    drawSkyElements() {
+        console.log(`Drawing ${this.skyElements.length} sky elements`); // DEBUG
+        for (let element of this.skyElements) {
+            this.ctx.save();
+            
+            if (element.type === 'star') {
+                // Draw twinkling stars
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${element.brightness})`;
+                this.ctx.beginPath();
+                this.ctx.arc(element.x, element.y, element.size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Update twinkling effect
+                element.brightness += (Math.random() - 0.5) * 0.1;
+                element.brightness = Math.max(0.3, Math.min(1.0, element.brightness));
+                
+            } else if (element.type === 'cloud') {
+                // Draw emoji clouds with drift and varied sizes
+                //console.log(`Drawing cloud: ${element.emoji} at (${Math.round(element.x)}, ${Math.round(element.y)}) size: ${element.size}`); // DEBUG
+                this.ctx.font = `${element.size}px Arial`;
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(element.emoji, element.x, element.y);
+                
+                // Update cloud position (slow drift)
+                element.x += element.drift;
+                if (element.x < -30) element.x = this.width + 30;
+                if (element.x > this.width + 30) element.x = -30;
+                
+            } else if (element.type === 'sun' || element.type === 'moon') {
+                // Draw emoji sun or moon at large size
+                this.ctx.font = `${element.size}px Arial`;
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(element.emoji, element.x, element.y);
+            }
+            
+            this.ctx.restore();
+        }
+    }
+    
+    drawGameStatus() {
+        if (!this.statusMessage) return;
+        
+        this.ctx.save();
+        
+        // Draw semi-transparent background for better readability
+        const statusHeight = 40;
+        const padding = 10;
+        
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent black
+        this.ctx.fillRect(0, this.height - statusHeight, this.width, statusHeight);
+        
+        // Add a subtle border on top of the status bar
+        this.ctx.strokeStyle = '#00ff00';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, this.height - statusHeight);
+        this.ctx.lineTo(this.width, this.height - statusHeight);
+        this.ctx.stroke();
+        
+        // Draw the status text
+        this.ctx.font = 'bold 16px "Courier New", monospace';
+        this.ctx.fillStyle = '#ffff00'; // Yellow text
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(
+            this.statusMessage, 
+            this.width / 2, 
+            this.height - statusHeight / 2
+        );
+        
+        this.ctx.restore();
+    }
+
     gameLoop() {
         this.updateProjectile();
         this.updateExplosions();
         this.draw();
+        
         requestAnimationFrame(() => this.gameLoop());
     }
     
     makeAiMove() {
-        if (this.currentPlayer !== 2 || this.gameOver || this.projectile) return;
+        // AI logic to determine angle and velocity
+        const angle = Math.random() * 90;
+        const velocity = Math.random() * 100;
         
-        const aiGorilla = this.gorillas[1];
-        const targetGorilla = this.gorillas[0];
-        
-        // Track total shots for learning
-        this.aiLearning.totalShots++;
-        
-        // Calculate basic trajectory to target
-        const dx = targetGorilla.x - aiGorilla.x;
-        const dy = targetGorilla.y - aiGorilla.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Calculate AI skill improvement based on performance
-        const successRate = this.aiLearning.totalShots > 0 ? this.aiLearning.hits / this.aiLearning.totalShots : 0;
-        const totalRounds = this.scores[0] + this.scores[1];
-        
-        // AI gets progressively better: starts at 70% accuracy, improves to 90% by round 10
-        const baseSkill = 0.7 + Math.min(totalRounds * 0.02, 0.2); // 70% to 90%
-        const adaptiveSkill = Math.min(baseSkill + successRate * 0.1, 0.95); // Cap at 95%
-        
-        // Randomness factor decreases as AI gets smarter
-        const maxRandomness = 0.3 - Math.min(totalRounds * 0.01, 0.15); // 30% to 15% randomness
-        const randomFactor = 1.0 + (Math.random() - 0.5) * maxRandomness;
-        
-        // Wind compensation improves over time
-        const windCompensation = Math.min(0.5 + totalRounds * 0.05, 1.0); // 50% to 100% wind compensation
-        const windAdjustment = this.wind * -3 * windCompensation;
-        
-        // Calculate angle and velocity with improved logic
-        let angle, velocity;
-        
-        // Use successful shot data if available and similar conditions
-        if (this.aiLearning.lastSuccessfulShot && Math.abs(this.wind - this.aiLearning.lastSuccessfulShot.wind) < 2) {
-            // Learn from previous success with some variation
-            angle = this.aiLearning.lastSuccessfulShot.angle + (Math.random() - 0.5) * 10 * (1 - adaptiveSkill);
-            velocity = this.aiLearning.lastSuccessfulShot.velocity + (Math.random() - 0.5) * 15 * (1 - adaptiveSkill);
-        } else {
-            // Calculate based on distance with improved accuracy
-            if (distance < 200) {
-                // Close range - high arc
-                angle = 65 + Math.random() * 15 * (1 - adaptiveSkill); // Tighter range as AI improves
-                velocity = 35 + Math.random() * 25 * (1 - adaptiveSkill);
-            } else if (distance < 400) {
-                // Medium range
-                angle = 40 + Math.random() * 20 * (1 - adaptiveSkill);
-                velocity = 50 + Math.random() * 30 * (1 - adaptiveSkill);
-            } else {
-                // Long range - lower arc
-                angle = 30 + Math.random() * 25 * (1 - adaptiveSkill);
-                velocity = 70 + Math.random() * 25 * (1 - adaptiveSkill);
-            }
-        }
-        
-        // Apply skill-based adjustments
-        angle *= randomFactor;
-        velocity *= randomFactor;
-        
-        // Apply improved wind compensation
-        velocity += Math.abs(windAdjustment);
-        if (this.wind > 0) {
-            angle -= Math.abs(this.wind) * 0.5 * windCompensation; // Adjust angle for crosswind
-        } else {
-            angle += Math.abs(this.wind) * 0.5 * windCompensation;
-        }
-        
-        // Clamp values to valid ranges
-        angle = Math.max(5, Math.min(85, angle));
-        velocity = Math.max(10, Math.min(95, velocity));
-        
-        // Set AI inputs (for visual feedback)
         this.angleInput.value = Math.round(angle);
         this.velocityInput.value = Math.round(velocity);
         
-        // Show AI difficulty status
-        const difficultyLevel = totalRounds < 3 ? "Easy" : totalRounds < 6 ? "Medium" : "Hard";
-        this.updateStatus(`AI is thinking... (${difficultyLevel} mode)`);
+        this.isAiThinking = false;
+        this.fire();
+    }
+
+    generateSkyElements() {
+        this.skyElements = [];
+        console.log("Generating sky elements..."); // DEBUG
         
-        // Fire after a short delay
-        setTimeout(() => {
-            this.isAiThinking = false;
-            this.fire();
-        }, 500);
+        if (this.isNight) {
+            // Generate stars for night sky
+            for (let i = 0; i < 50; i++) {
+                this.skyElements.push({
+                    type: 'star',
+                    x: Math.random() * this.width,
+                    y: Math.random() * (this.height * 0.4), // Stars in upper 40% of sky
+                    size: Math.random() * 2 + 1,
+                    brightness: Math.random() * 0.5 + 0.5
+                });
+            }
+            
+            // Add moon
+            this.skyElements.push({
+                type: 'moon',
+                x: this.width - 100 - Math.random() * 200,
+                y: 60 + Math.random() * 100,
+                emoji: ['🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '🌙', '🌛', '🌜', '🌝', '🌚'][Math.floor(Math.random() * 13)],
+                size: 56 // Large moon size
+            });
+        } else {
+            // Add sun for day
+            this.skyElements.push({
+                type: 'sun',
+                x: this.width - 100 - Math.random() * 200,
+                y: 60 + Math.random() * 100,
+                emoji: ['☀️', '🌞', '⛅️', '🌤️', '🌥️', '🌦️'][Math.floor(Math.random() * 6)],
+                size: 56 // Large sun size
+            });
+        }
+        
+        // Add clouds (day or night)
+        const numClouds = Math.floor(Math.random() * 4) + 2; // 2-5 clouds
+        for (let i = 0; i < numClouds; i++) {
+            // Weighted cloud selection to favor normal weather (70% normal, 30% weather)
+            const rand = Math.random();
+            let cloudEmoji;
+            if (rand < 0.7) {
+                // 70% chance for normal clouds
+                cloudEmoji = '☁️';
+            } else {
+                // 30% chance for weather clouds, evenly distributed
+                const weatherClouds = ['🌧️', '🌨️', '⛈️', '🌩️'];
+                cloudEmoji = weatherClouds[Math.floor(Math.random() * weatherClouds.length)];
+            }
+            
+            // Determine cloud size based on type - storm clouds are larger
+            let cloudSize;
+            if (cloudEmoji === '⛈️' || cloudEmoji === '🌩️') {
+                // Storm clouds: 40-60px (large)
+                cloudSize = Math.random() * 20 + 40;
+            } else if (cloudEmoji === '🌧️' || cloudEmoji === '🌨️') {
+                // Weather clouds: 28-48px (medium-large)
+                cloudSize = Math.random() * 20 + 28;
+            } else {
+                // Regular clouds: varied sizes 18-45px
+                cloudSize = Math.random() * 27 + 18;
+            }
+            
+            this.skyElements.push({
+                type: 'cloud',
+                x: Math.random() * this.width,
+                y: Math.random() * (this.height * 0.3) + 20, // Clouds in upper 30% of sky
+                emoji: cloudEmoji,
+                drift: this.windSpeed * this.windDirection * 0.1, // More visible cloud movement
+                size: cloudSize
+            });
+            const lastCloud = this.skyElements[this.skyElements.length - 1];
+            console.log(`Added cloud: ${cloudEmoji} at (${Math.round(lastCloud.x)}, ${Math.round(lastCloud.y)}) size: ${cloudSize}`); // DEBUG
+        }
+        console.log(`Total sky elements generated: ${this.skyElements.length}`); // DEBUG
     }
 }
 
