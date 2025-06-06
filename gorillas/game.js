@@ -23,6 +23,14 @@ class GorillasGame {
             adaptationFactor: 1.0
         };
         
+        // Game statistics
+        this.gameStats = {
+            startTime: Date.now(),
+            totalRounds: 0,
+            shotsTotal: 0,
+            shotsHit: 0
+        };
+        
         // Day/night cycle
         this.isNight = Math.random() > 0.5; // Random start
         this.skyElements = [];
@@ -47,6 +55,17 @@ class GorillasGame {
         this.score1 = document.getElementById('score1');
         this.score2 = document.getElementById('score2');
         this.windInfo = document.getElementById('windInfo');
+        
+        // Modal elements
+        this.gameOverModal = document.getElementById('gameOverModal');
+        this.gameOverTitle = document.getElementById('gameOverTitle');
+        this.winnerText = document.getElementById('winnerText');
+        this.finalScore = document.getElementById('finalScore');
+        this.totalRounds = document.getElementById('totalRounds');
+        this.aiStats = document.getElementById('aiStats');
+        this.gameDuration = document.getElementById('gameDuration');
+        this.playAgainBtn = document.getElementById('playAgainBtn');
+        this.modalContent = document.querySelector('.modal-content');
         
         this.init();
     }
@@ -206,6 +225,18 @@ class GorillasGame {
             this.draw();
         });
         
+        // Modal event listeners
+        this.playAgainBtn.addEventListener('click', () => {
+            this.hideModal();
+            this.resetGame();
+        });
+        
+        // Prevent propagation from modal content to prevent closing when clicking on the content
+        this.modalContent.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Close modal with Escape key
         document.addEventListener('keydown', (e) => {
             // Only allow controls during player 1's turn
             if (this.currentPlayer !== 1 || this.gameOver || this.projectile || this.isAiThinking) {
@@ -566,21 +597,73 @@ class GorillasGame {
     endGame() {
         this.gameOver = true;
         const winner = this.scores[0] >= 3 ? 1 : 2;
-        const winnerName = winner === 1 ? "You" : "AI";
-        this.updateStatus(`🎉 ${winnerName} win${winner === 1 ? "" : "s"} the game! 🎉`);
+        this.updateStatus(`🎉 Game Over! 🎉`);
         this.fireButton.disabled = true;
         
-        setTimeout(() => {
-            if (confirm(`${winnerName} win${winner === 1 ? "" : "s"}! Play again?`)) {
-                this.resetGame();
-            }
-        }, 1000);
+        // Calculate and display game statistics
+        this.calculateGameStats();
+        this.showModal(winner);
+    }
+    
+    calculateGameStats() {
+        // Calculate game duration
+        const gameEndTime = Date.now();
+        const durationMs = gameEndTime - this.gameStats.startTime;
+        const minutes = Math.floor(durationMs / 60000);
+        const seconds = Math.floor((durationMs % 60000) / 1000);
+        this.gameStats.gameDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Calculate total rounds
+        this.gameStats.totalRounds = this.scores[0] + this.scores[1];
+        
+        // Calculate AI performance
+        if (this.aiLearning.totalShots > 0) {
+            const accuracy = Math.round((this.aiLearning.hits / this.aiLearning.totalShots) * 100);
+            this.gameStats.aiAccuracy = accuracy;
+        } else {
+            this.gameStats.aiAccuracy = 0;
+        }
+    }
+    
+    showModal(winner) {
+        const winnerName = winner === 1 ? "You" : "AI";
+        
+        // Update modal content
+        this.winnerText.textContent = `${winnerName} Win${winner === 1 ? "" : "s"}!`;
+        this.finalScore.textContent = `${this.scores[0]} - ${this.scores[1]}`;
+        this.totalRounds.textContent = this.gameStats.totalRounds;
+        this.aiStats.textContent = `Hit Rate: ${this.gameStats.aiAccuracy}%`;
+        this.gameDuration.textContent = this.gameStats.gameDuration;
+        
+        // Show modal
+        this.gameOverModal.style.display = 'flex';
+    }
+    
+    hideModal() {
+        this.gameOverModal.style.display = 'none';
     }
     
     resetGame() {
         this.scores = [0, 0];
         this.updateScores();
         this.gameOver = false;
+        
+        // Reset game statistics
+        this.gameStats = {
+            startTime: Date.now(),
+            totalRounds: 0,
+            shotsTotal: 0,
+            shotsHit: 0
+        };
+        
+        // Reset AI learning data
+        this.aiLearning = {
+            totalShots: 0,
+            hits: 0,
+            lastSuccessfulShot: null,
+            adaptationFactor: 1.0
+        };
+        
         this.newRound();
     }
     

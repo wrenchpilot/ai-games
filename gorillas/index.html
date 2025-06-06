@@ -49,6 +49,44 @@
             <p><strong>Controls:</strong> ↑↓ = Velocity, ←→ = Angle, Space = Fire</p>
         </div>
     </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="gameOverTitle">🎉 Game Over! 🎉</h2>
+            </div>
+            <div class="modal-body">
+                <div class="winner-announcement">
+                    <p id="winnerText">Player 1 Wins!</p>
+                </div>
+                <div class="game-stats">
+                    <h3>Game Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Final Score:</span>
+                            <span class="stat-value" id="finalScore">3 - 2</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Rounds:</span>
+                            <span class="stat-value" id="totalRounds">5</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">AI Performance:</span>
+                            <span class="stat-value" id="aiStats">Hit Rate: 40%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Game Duration:</span>
+                            <span class="stat-value" id="gameDuration">2:45</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="playAgainBtn" class="modal-btn primary">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="game.js"></script>
 </body>
