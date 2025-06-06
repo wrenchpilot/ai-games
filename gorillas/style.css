@@ -59,22 +59,22 @@ body {
 .game-controls {
     text-align: center;
     margin-bottom: 20px;
+    padding-bottom: 5px; /* Add some padding since we removed the visible game status */
 }
 
 .control-panel {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
     margin-bottom: 15px;
 }
 
-.player-turn {
-    font-size: 1.2em;
-    color: #ffff00;
-    font-weight: bold;
-    text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+.controls-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .input-group {
@@ -87,36 +87,46 @@ body {
 .input-group label {
     font-size: 0.9em;
     color: #00ff00;
+    white-space: nowrap;
 }
 
 .input-group input {
     width: 80px;
-    padding: 5px;
-    border: 1px solid #00ff00;
+    padding: 8px;
+    border: 2px solid #00ff00;
     background: #000;
     color: #00ff00;
     text-align: center;
-    border-radius: 3px;
+    border-radius: 5px;
     font-family: 'Courier New', monospace;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
 .input-group input:focus {
     outline: none;
-    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+    border-color: #00ff88;
 }
 
 .fire-btn {
     background: linear-gradient(45deg, #ff4444, #cc0000);
     color: white;
     border: 2px solid #ff6666;
-    padding: 10px 20px;
+    padding: 10px 25px;
     font-size: 1.1em;
     font-weight: bold;
     border-radius: 5px;
     cursor: pointer;
     font-family: 'Courier New', monospace;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .fire-btn:hover {
@@ -143,6 +153,7 @@ body {
     font-weight: bold;
     min-height: 25px;
     text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+    display: none; /* Hide the HTML element since we're drawing it on canvas */
 }
 
 .instructions {
@@ -378,4 +389,43 @@ body {
 
 .modal-btn:active {
     transform: translateY(0);
+}
+
+.player-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.turn-indicator {
+    font-size: 1em;
+    color: #ffff00;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+    visibility: hidden; /* Initially hidden, will be shown via JS */
+    height: 20px;
+    margin-bottom: 3px;
+}
+
+.turn-indicator.active {
+    visibility: visible;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .controls-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .input-group {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .fire-btn {
+        width: 100%;
+        max-width: 200px;
+    }
 }

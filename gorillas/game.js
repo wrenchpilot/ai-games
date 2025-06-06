@@ -23,6 +23,9 @@ class GorillasGame {
             adaptationFactor: 1.0
         };
         
+        // Store current status message for canvas rendering
+        this.statusMessage = "";
+        
         // Game statistics
         this.gameStats = {
             startTime: Date.now(),
@@ -50,7 +53,8 @@ class GorillasGame {
         this.angleInput = document.getElementById('angle');
         this.velocityInput = document.getElementById('velocity');
         this.fireButton = document.getElementById('fireButton');
-        this.playerTurn = document.getElementById('playerTurn');
+        this.player1Turn = document.getElementById('player1Turn');
+        this.player2Turn = document.getElementById('player2Turn');
         this.gameStatus = document.getElementById('gameStatus');
         this.score1 = document.getElementById('score1');
         this.score2 = document.getElementById('score2');
@@ -126,6 +130,11 @@ class GorillasGame {
         this.placeGorillas();
         this.generateWind();
         this.generateSkyElements(); // Move sky generation after wind is set
+        
+        // Initialize turn indicators
+        this.player1Turn.classList.add('active');
+        this.player2Turn.classList.remove('active');
+        
         this.setupEventListeners();
         this.gameLoop();
     }
@@ -537,7 +546,15 @@ class GorillasGame {
     
     nextTurn() {
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        this.playerTurn.textContent = `Player ${this.currentPlayer}'s Turn`;
+        
+        // Update turn indicators
+        if (this.currentPlayer === 1) {
+            this.player1Turn.classList.add('active');
+            this.player2Turn.classList.remove('active');
+        } else {
+            this.player1Turn.classList.remove('active');
+            this.player2Turn.classList.add('active');
+        }
         
         if (this.currentPlayer === 2) {
             // AI turn - disable player controls
@@ -579,7 +596,10 @@ class GorillasGame {
         this.projectile = null;
         this.explosions = [];
         this.currentPlayer = 1;
-        this.playerTurn.textContent = `Player ${this.currentPlayer}'s Turn`;
+        
+        // Update turn indicators
+        this.player1Turn.classList.add('active');
+        this.player2Turn.classList.remove('active');
         
         // Enable player 1 controls for new round
         this.fireButton.disabled = false;
@@ -674,6 +694,7 @@ class GorillasGame {
     
     updateStatus(message) {
         this.gameStatus.textContent = message;
+        this.statusMessage = message; // Store for canvas rendering
     }
     
     draw() {
@@ -712,6 +733,9 @@ class GorillasGame {
         
         // Draw explosions
         this.drawExplosions();
+        
+        // Draw game status overlay
+        this.drawGameStatus();
     }
     
     drawBuildings() {
@@ -864,19 +888,21 @@ class GorillasGame {
         let x = gorilla.x + (direction * 20);
         let y = gorilla.y - 25;
         
-        // Initial velocity (same as projectile)
-        let vx = Math.cos(radians) * velocity * 0.15 * direction;
-        let vy = -Math.sin(radians) * velocity * 0.15;
+        // Initial velocity with reduced accuracy (only show approximate trajectory)
+        // Add some randomness to make it less precise
+        const accuracyFactor = 0.8; // Reduce accuracy to 80%
+        let vx = Math.cos(radians) * velocity * 0.15 * direction * accuracyFactor;
+        let vy = -Math.sin(radians) * velocity * 0.15 * accuracyFactor;
         
         this.ctx.save();
-        this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)'; // More transparent
         this.ctx.lineWidth = 2;
         this.ctx.setLineDash([8, 4]);
         this.ctx.beginPath();
         this.ctx.moveTo(x, y);
         
-        // Simulate trajectory for a limited number of steps
-        const maxSteps = 120;
+        // Simulate trajectory for a limited number of steps (shorter range)
+        const maxSteps = 40; // Further reduced from 60 to show even less trajectory
         const timeStep = 1;
         let lastX = x, lastY = y;
         
@@ -887,53 +913,41 @@ class GorillasGame {
             vy += 0.15 * timeStep; // gravity
             vx += this.wind * 0.005 * timeStep; // wind effect
             
+            // No random drift - keep trajectory smooth but inaccurate due to reduced accuracy factor
+            
             // Stop if trajectory goes off screen or hits ground
             if (x < 0 || x > this.width || y > this.height) {
                 break;
             }
             
-            // Check if trajectory would hit a building
+            // Check if trajectory would hit a building (simplified check)
             let hitBuilding = false;
             for (let building of this.buildings) {
                 if (x >= building.x && x <= building.x + building.width &&
                     y >= building.y && y <= building.y + building.height) {
-                    // Check if it would hit a hole
-                    let hitHole = false;
-                    if (building.holes) {
-                        for (let hole of building.holes) {
-                            const holeX = building.x + hole.x;
-                            const holeY = building.y + hole.y;
-                            const distance = Math.sqrt((x - holeX) ** 2 + (y - holeY) ** 2);
-                            if (distance < hole.width / 2) {
-                                hitHole = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!hitHole) {
-                        hitBuilding = true;
-                        break;
-                    }
+                    // Simplified collision - don't check holes for trajectory indicator
+                    hitBuilding = true;
+                    break;
                 }
             }
             
             if (hitBuilding) {
-                // Draw line to impact point
+                // Draw line to approximate impact point (not exact)
                 this.ctx.lineTo(x, y);
-                
-                // Draw impact indicator
                 this.ctx.stroke();
                 this.ctx.setLineDash([]);
-                this.ctx.fillStyle = 'rgba(255, 100, 0, 0.8)';
+                
+                // Draw a larger, more vague impact indicator
+                this.ctx.fillStyle = 'rgba(255, 200, 0, 0.6)';
                 this.ctx.beginPath();
-                this.ctx.arc(x, y, 6, 0, Math.PI * 2);
+                this.ctx.arc(x, y, 12, 0, Math.PI * 2); // Larger radius for vague indication
                 this.ctx.fill();
                 this.ctx.restore();
                 return;
             }
             
-            // Draw trajectory line every few steps for smoother appearance
-            if (step % 2 === 0) {
+            // Draw trajectory line every few steps for choppier appearance
+            if (step % 3 === 0) { // Draw every 3rd step instead of every 2nd
                 this.ctx.lineTo(x, y);
             }
             
@@ -1068,98 +1082,59 @@ class GorillasGame {
             this.ctx.restore();
         }
     }
+    
+    drawGameStatus() {
+        if (!this.statusMessage) return;
+        
+        this.ctx.save();
+        
+        // Draw semi-transparent background for better readability
+        const statusHeight = 40;
+        const padding = 10;
+        
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent black
+        this.ctx.fillRect(0, this.height - statusHeight, this.width, statusHeight);
+        
+        // Add a subtle border on top of the status bar
+        this.ctx.strokeStyle = '#00ff00';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, this.height - statusHeight);
+        this.ctx.lineTo(this.width, this.height - statusHeight);
+        this.ctx.stroke();
+        
+        // Draw the status text
+        this.ctx.font = 'bold 16px "Courier New", monospace';
+        this.ctx.fillStyle = '#ffff00'; // Yellow text
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(
+            this.statusMessage, 
+            this.width / 2, 
+            this.height - statusHeight / 2
+        );
+        
+        this.ctx.restore();
+    }
 
     gameLoop() {
         this.updateProjectile();
         this.updateExplosions();
         this.draw();
+        
         requestAnimationFrame(() => this.gameLoop());
     }
     
     makeAiMove() {
-        if (this.currentPlayer !== 2 || this.gameOver || this.projectile) return;
+        // AI logic to determine angle and velocity
+        const angle = Math.random() * 90;
+        const velocity = Math.random() * 100;
         
-        const aiGorilla = this.gorillas[1];
-        const targetGorilla = this.gorillas[0];
-        
-        // Track total shots for learning
-        this.aiLearning.totalShots++;
-        
-        // Calculate basic trajectory to target
-        const dx = targetGorilla.x - aiGorilla.x;
-        const dy = targetGorilla.y - aiGorilla.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Calculate AI skill improvement based on performance
-        const successRate = this.aiLearning.totalShots > 0 ? this.aiLearning.hits / this.aiLearning.totalShots : 0;
-        const totalRounds = this.scores[0] + this.scores[1];
-        
-        // AI gets progressively better: starts at 70% accuracy, improves to 90% by round 10
-        const baseSkill = 0.7 + Math.min(totalRounds * 0.02, 0.2); // 70% to 90%
-        const adaptiveSkill = Math.min(baseSkill + successRate * 0.1, 0.95); // Cap at 95%
-        
-        // Randomness factor decreases as AI gets smarter
-        const maxRandomness = 0.3 - Math.min(totalRounds * 0.01, 0.15); // 30% to 15% randomness
-        const randomFactor = 1.0 + (Math.random() - 0.5) * maxRandomness;
-        
-        // Wind compensation improves over time
-        const windCompensation = Math.min(0.5 + totalRounds * 0.05, 1.0); // 50% to 100% wind compensation
-        const windAdjustment = this.wind * -3 * windCompensation;
-        
-        // Calculate angle and velocity with improved logic
-        let angle, velocity;
-        
-        // Use successful shot data if available and similar conditions
-        if (this.aiLearning.lastSuccessfulShot && Math.abs(this.wind - this.aiLearning.lastSuccessfulShot.wind) < 2) {
-            // Learn from previous success with some variation
-            angle = this.aiLearning.lastSuccessfulShot.angle + (Math.random() - 0.5) * 10 * (1 - adaptiveSkill);
-            velocity = this.aiLearning.lastSuccessfulShot.velocity + (Math.random() - 0.5) * 15 * (1 - adaptiveSkill);
-        } else {
-            // Calculate based on distance with improved accuracy
-            if (distance < 200) {
-                // Close range - high arc
-                angle = 65 + Math.random() * 15 * (1 - adaptiveSkill); // Tighter range as AI improves
-                velocity = 35 + Math.random() * 25 * (1 - adaptiveSkill);
-            } else if (distance < 400) {
-                // Medium range
-                angle = 40 + Math.random() * 20 * (1 - adaptiveSkill);
-                velocity = 50 + Math.random() * 30 * (1 - adaptiveSkill);
-            } else {
-                // Long range - lower arc
-                angle = 30 + Math.random() * 25 * (1 - adaptiveSkill);
-                velocity = 70 + Math.random() * 25 * (1 - adaptiveSkill);
-            }
-        }
-        
-        // Apply skill-based adjustments
-        angle *= randomFactor;
-        velocity *= randomFactor;
-        
-        // Apply improved wind compensation
-        velocity += Math.abs(windAdjustment);
-        if (this.wind > 0) {
-            angle -= Math.abs(this.wind) * 0.5 * windCompensation; // Adjust angle for crosswind
-        } else {
-            angle += Math.abs(this.wind) * 0.5 * windCompensation;
-        }
-        
-        // Clamp values to valid ranges
-        angle = Math.max(5, Math.min(85, angle));
-        velocity = Math.max(10, Math.min(95, velocity));
-        
-        // Set AI inputs (for visual feedback)
         this.angleInput.value = Math.round(angle);
         this.velocityInput.value = Math.round(velocity);
         
-        // Show AI difficulty status
-        const difficultyLevel = totalRounds < 3 ? "Easy" : totalRounds < 6 ? "Medium" : "Hard";
-        this.updateStatus(`AI is thinking... (${difficultyLevel} mode)`);
-        
-        // Fire after a short delay
-        setTimeout(() => {
-            this.isAiThinking = false;
-            this.fire();
-        }, 500);
+        this.isAiThinking = false;
+        this.fire();
     }
 
     generateSkyElements() {
