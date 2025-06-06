@@ -195,6 +195,17 @@ class GorillasGame {
     setupEventListeners() {
         this.fireButton.addEventListener('click', () => this.fire());
         
+        // Add input event listeners for real-time trajectory updates
+        this.angleInput.addEventListener('input', () => {
+            // Force a redraw to update trajectory indicator
+            this.draw();
+        });
+        
+        this.velocityInput.addEventListener('input', () => {
+            // Force a redraw to update trajectory indicator
+            this.draw();
+        });
+        
         document.addEventListener('keydown', (e) => {
             // Only allow controls during player 1's turn
             if (this.currentPlayer !== 1 || this.gameOver || this.projectile || this.isAiThinking) {
@@ -536,6 +547,9 @@ class GorillasGame {
         // Draw gorillas
         this.drawGorillas();
         
+        // Draw trajectory indicator
+        this.drawTrajectoryIndicator();
+        
         // Draw projectile
         this.drawProjectile();
         
@@ -672,6 +686,107 @@ class GorillasGame {
             
             this.ctx.restore();
         }
+    }
+    
+    drawTrajectoryIndicator() {
+        // Only show trajectory when it's player 1's turn and no projectile is active
+        if (this.gameOver || this.projectile || this.isAiThinking || this.currentPlayer === 2) {
+            return;
+        }
+        
+        const angle = parseInt(this.angleInput.value) || 45;
+        const velocity = parseInt(this.velocityInput.value) || 50;
+        
+        if (isNaN(angle) || isNaN(velocity)) return;
+        
+        const gorilla = this.gorillas[this.currentPlayer - 1];
+        const radians = (angle * Math.PI) / 180;
+        const direction = this.currentPlayer === 1 ? 1 : -1;
+        
+        // Starting position (same as projectile)
+        let x = gorilla.x + (direction * 20);
+        let y = gorilla.y - 25;
+        
+        // Initial velocity (same as projectile)
+        let vx = Math.cos(radians) * velocity * 0.15 * direction;
+        let vy = -Math.sin(radians) * velocity * 0.15;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([8, 4]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        
+        // Simulate trajectory for a limited number of steps
+        const maxSteps = 120;
+        const timeStep = 1;
+        let lastX = x, lastY = y;
+        
+        for (let step = 0; step < maxSteps; step++) {
+            // Update position using same physics as projectile
+            x += vx * timeStep;
+            y += vy * timeStep;
+            vy += 0.15 * timeStep; // gravity
+            vx += this.wind * 0.005 * timeStep; // wind effect
+            
+            // Stop if trajectory goes off screen or hits ground
+            if (x < 0 || x > this.width || y > this.height) {
+                break;
+            }
+            
+            // Check if trajectory would hit a building
+            let hitBuilding = false;
+            for (let building of this.buildings) {
+                if (x >= building.x && x <= building.x + building.width &&
+                    y >= building.y && y <= building.y + building.height) {
+                    // Check if it would hit a hole
+                    let hitHole = false;
+                    if (building.holes) {
+                        for (let hole of building.holes) {
+                            const holeX = building.x + hole.x;
+                            const holeY = building.y + hole.y;
+                            const distance = Math.sqrt((x - holeX) ** 2 + (y - holeY) ** 2);
+                            if (distance < hole.width / 2) {
+                                hitHole = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hitHole) {
+                        hitBuilding = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (hitBuilding) {
+                // Draw line to impact point
+                this.ctx.lineTo(x, y);
+                
+                // Draw impact indicator
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                this.ctx.fillStyle = 'rgba(255, 100, 0, 0.8)';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 6, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.restore();
+                return;
+            }
+            
+            // Draw trajectory line every few steps for smoother appearance
+            if (step % 2 === 0) {
+                this.ctx.lineTo(x, y);
+            }
+            
+            lastX = x;
+            lastY = y;
+        }
+        
+        // If we reach here, trajectory went off screen
+        this.ctx.stroke();
+        this.ctx.restore();
     }
     
     drawProjectile() {
