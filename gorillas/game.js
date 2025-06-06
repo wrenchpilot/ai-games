@@ -26,7 +26,10 @@ class GorillasGame {
         // Day/night cycle
         this.isNight = Math.random() > 0.5; // Random start
         this.skyElements = [];
-        this.generateSkyElements();
+        
+        // Initialize wind values before generating sky elements
+        this.windSpeed = 0;
+        this.windDirection = 1;
         
         // Sound effects
         this.sounds = {
@@ -102,6 +105,7 @@ class GorillasGame {
         this.generateBuildings();
         this.placeGorillas();
         this.generateWind();
+        this.generateSkyElements(); // Move sky generation after wind is set
         this.setupEventListeners();
         this.gameLoop();
     }
@@ -176,8 +180,15 @@ class GorillasGame {
     }
     
     generateWind() {
-        this.wind = (Math.random() - 0.5) * 10;
-        this.updateStatus(`Wind: ${this.wind.toFixed(1)} ${this.wind > 0 ? 'E' : 'W'}`);
+        // Wind speed: 0-10 (always positive)
+        this.windSpeed = Math.random() * 10;
+        // Wind direction: 1 for East (right), -1 for West (left)
+        this.windDirection = Math.random() > 0.5 ? 1 : -1;
+        // Combined wind effect for projectile physics (can be negative)
+        this.wind = this.windSpeed * this.windDirection;
+        
+        const directionText = this.windDirection > 0 ? 'E' : 'W';
+        this.updateStatus(`Wind: ${this.windSpeed.toFixed(1)} ${directionText}`);
     }
     
     setupEventListeners() {
@@ -497,8 +508,21 @@ class GorillasGame {
     }
     
     draw() {
-        // Clear canvas with sky color based on day/night
-        const skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
+        // Check for storm clouds to determine sky atmosphere
+        const hasStormClouds = this.skyElements.some(element => 
+            element.type === 'cloud' && (element.emoji === '🌧️' || element.emoji === '🌨️' || element.emoji === '⛈️' || element.emoji === '🌩️')
+        );
+        
+        // Clear canvas with sky color based on day/night and weather
+        let skyColor;
+        if (hasStormClouds) {
+            // Gray, stormy sky when weather clouds are present
+            skyColor = this.isNight ? '#2a2a3a' : '#778899'; // Darker gray for night, lighter gray for day
+        } else {
+            // Normal sky colors
+            skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
+        }
+        
         this.ctx.fillStyle = skyColor;
         this.ctx.fillRect(0, 0, this.width, this.height);
         
@@ -563,9 +587,20 @@ class GorillasGame {
             // Draw holes (destroy parts of the building)
             if (building.holes) {
                 for (let hole of building.holes) {
-                    // Draw hole with sky color instead of transparency
-                    const skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
-                    this.ctx.fillStyle = skyColor; // Match current sky background
+                    // Check for storm clouds to match sky color
+                    const hasStormClouds = this.skyElements.some(element => 
+                        element.type === 'cloud' && (element.emoji === '🌧️' || element.emoji === '🌨️' || element.emoji === '⛈️' || element.emoji === '🌩️')
+                    );
+                    
+                    // Draw hole with appropriate sky color
+                    let skyColor;
+                    if (hasStormClouds) {
+                        skyColor = this.isNight ? '#2a2a3a' : '#778899';
+                    } else {
+                        skyColor = this.isNight ? '#1a1a2e' : '#87ceeb';
+                    }
+                    
+                    this.ctx.fillStyle = skyColor;
                     this.ctx.beginPath();
                     this.ctx.arc(
                         building.x + hole.x, 
@@ -703,6 +738,7 @@ class GorillasGame {
     }
     
     drawSkyElements() {
+        console.log(`Drawing ${this.skyElements.length} sky elements`); // DEBUG
         for (let element of this.skyElements) {
             this.ctx.save();
             
@@ -718,8 +754,9 @@ class GorillasGame {
                 element.brightness = Math.max(0.3, Math.min(1.0, element.brightness));
                 
             } else if (element.type === 'cloud') {
-                // Draw emoji clouds with drift
-                this.ctx.font = '32px Arial';
+                // Draw emoji clouds with drift and varied sizes
+                //console.log(`Drawing cloud: ${element.emoji} at (${Math.round(element.x)}, ${Math.round(element.y)}) size: ${element.size}`); // DEBUG
+                this.ctx.font = `${element.size}px Arial`;
                 this.ctx.textAlign = 'center';
                 this.ctx.fillText(element.emoji, element.x, element.y);
                 
@@ -729,8 +766,8 @@ class GorillasGame {
                 if (element.x > this.width + 30) element.x = -30;
                 
             } else if (element.type === 'sun' || element.type === 'moon') {
-                // Draw emoji sun or moon
-                this.ctx.font = '48px Arial';
+                // Draw emoji sun or moon at large size
+                this.ctx.font = `${element.size}px Arial`;
                 this.ctx.textAlign = 'center';
                 this.ctx.fillText(element.emoji, element.x, element.y);
             }
@@ -834,6 +871,7 @@ class GorillasGame {
 
     generateSkyElements() {
         this.skyElements = [];
+        console.log("Generating sky elements..."); // DEBUG
         
         if (this.isNight) {
             // Generate stars for night sky
@@ -852,7 +890,8 @@ class GorillasGame {
                 type: 'moon',
                 x: this.width - 100 - Math.random() * 200,
                 y: 60 + Math.random() * 100,
-                emoji: ['🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '🌙', '🌛', '🌜', '🌝', '🌚'][Math.floor(Math.random() * 13)]
+                emoji: ['🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '🌙', '🌛', '🌜', '🌝', '🌚'][Math.floor(Math.random() * 13)],
+                size: 56 // Large moon size
             });
         } else {
             // Add sun for day
@@ -860,21 +899,51 @@ class GorillasGame {
                 type: 'sun',
                 x: this.width - 100 - Math.random() * 200,
                 y: 60 + Math.random() * 100,
-                emoji: ['☀️', '🌞', '⛅️', '🌤️', '🌥️', '🌦️', '🥵', '😎'][Math.floor(Math.random() * 8)]
+                emoji: ['☀️', '🌞', '⛅️', '🌤️', '🌥️', '🌦️'][Math.floor(Math.random() * 6)],
+                size: 56 // Large sun size
             });
         }
         
         // Add clouds (day or night)
         const numClouds = Math.floor(Math.random() * 4) + 2; // 2-5 clouds
         for (let i = 0; i < numClouds; i++) {
+            // Weighted cloud selection to favor normal weather (70% normal, 30% weather)
+            const rand = Math.random();
+            let cloudEmoji;
+            if (rand < 0.7) {
+                // 70% chance for normal clouds
+                cloudEmoji = '☁️';
+            } else {
+                // 30% chance for weather clouds, evenly distributed
+                const weatherClouds = ['🌧️', '🌨️', '⛈️', '🌩️'];
+                cloudEmoji = weatherClouds[Math.floor(Math.random() * weatherClouds.length)];
+            }
+            
+            // Determine cloud size based on type - storm clouds are larger
+            let cloudSize;
+            if (cloudEmoji === '⛈️' || cloudEmoji === '🌩️') {
+                // Storm clouds: 40-60px (large)
+                cloudSize = Math.random() * 20 + 40;
+            } else if (cloudEmoji === '🌧️' || cloudEmoji === '🌨️') {
+                // Weather clouds: 28-48px (medium-large)
+                cloudSize = Math.random() * 20 + 28;
+            } else {
+                // Regular clouds: varied sizes 18-45px
+                cloudSize = Math.random() * 27 + 18;
+            }
+            
             this.skyElements.push({
                 type: 'cloud',
                 x: Math.random() * this.width,
                 y: Math.random() * (this.height * 0.3) + 20, // Clouds in upper 30% of sky
-                emoji: ['☁️', '🌧️', '🌨️', '⛈️', '🌩️'][Math.floor(Math.random() * 5)],
-                drift: (Math.random() - 0.5) * 0.5 // Slow horizontal drift
+                emoji: cloudEmoji,
+                drift: this.windSpeed * this.windDirection * 0.1, // More visible cloud movement
+                size: cloudSize
             });
+            const lastCloud = this.skyElements[this.skyElements.length - 1];
+            console.log(`Added cloud: ${cloudEmoji} at (${Math.round(lastCloud.x)}, ${Math.round(lastCloud.y)}) size: ${cloudSize}`); // DEBUG
         }
+        console.log(`Total sky elements generated: ${this.skyElements.length}`); // DEBUG
     }
 }
 
