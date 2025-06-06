@@ -431,11 +431,8 @@ class GorillasGame {
     }
     
     draw() {
-        // Clear canvas with sky gradient
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
-        gradient.addColorStop(0, '#87ceeb');
-        gradient.addColorStop(1, '#b0e0e6');
-        this.ctx.fillStyle = gradient;
+        // Clear canvas with solid sky color (matches CSS background)
+        this.ctx.fillStyle = '#87ceeb';
         this.ctx.fillRect(0, 0, this.width, this.height);
         
         // Draw sun
@@ -465,13 +462,23 @@ class GorillasGame {
             
             // Draw windows using pre-generated window data
             for (let window of building.windows) {
-                // Check if window is not inside a hole
+                // Check if window is not inside a hole (proper circular collision)
                 let windowInHole = false;
                 if (building.holes) {
                     for (let hole of building.holes) {
-                        const holeLeft = building.x + hole.x;
-                        const holeRight = holeLeft + hole.width;
-                        if (window.x >= holeLeft && window.x + window.width <= holeRight) {
+                        // Calculate distance from window center to hole center
+                        const windowCenterX = window.x + window.width / 2;
+                        const windowCenterY = window.y + window.height / 2;
+                        const holeCenterX = building.x + hole.x;
+                        const holeCenterY = building.y + hole.y;
+                        
+                        const distance = Math.sqrt(
+                            Math.pow(windowCenterX - holeCenterX, 2) + 
+                            Math.pow(windowCenterY - holeCenterY, 2)
+                        );
+                        
+                        // If window is within the hole radius, hide it
+                        if (distance < hole.width / 2) {
                             windowInHole = true;
                             break;
                         }
@@ -492,20 +499,17 @@ class GorillasGame {
             // Draw holes (destroy parts of the building)
             if (building.holes) {
                 for (let hole of building.holes) {
-                    // Use composite operation to "cut out" the hole
-                    this.ctx.save();
-                    this.ctx.globalCompositeOperation = 'destination-out';
-                    this.ctx.fillStyle = '#000';
+                    // Draw hole with sky color instead of transparency
+                    this.ctx.fillStyle = '#87ceeb'; // Match sky background
                     this.ctx.beginPath();
                     this.ctx.arc(
-                        building.x + hole.x + hole.width / 2, 
-                        building.y + hole.width / 2, 
+                        building.x + hole.x, 
+                        building.y + hole.y, 
                         hole.width / 2, 
                         0, 
                         Math.PI * 2
                     );
                     this.ctx.fill();
-                    this.ctx.restore();
                 }
             }
         }
