@@ -1,1 +1,23 @@
 .DS_Store
+node_modules/
+dist/
+.env
+
+# NPM
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+# Logs
+logs/
+*.log
+*.log.*
+
+# Copilot
+.vscode/
+.history/
+.github/memory/
+.github/instructions/
+.github/prompts/
+.github/copilot-instructions.md
